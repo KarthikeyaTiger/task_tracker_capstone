@@ -1,0 +1,102 @@
+[
+  {
+    "task_id": 101,
+    "project_id": 1,
+    "employee_id": 10,
+    "title": "Design Homepage",
+    "description": "Create a responsive homepage layout.",
+    "startdate": "2024-11-01",
+    "enddate": "2024-11-05",
+    "task_status": "completed"
+  },
+  {
+    "task_id": 102,
+    "project_id": 1,
+    "employee_id": 12,
+    "title": "API Integration",
+    "description": "Integrate third-party APIs for the application.",
+    "startdate": "2024-11-06",
+    "enddate": "2024-11-10",
+    "task_status": "inProgress"
+  },
+  {
+    "task_id": 103,
+    "project_id": 2,
+    "employee_id": 14,
+    "title": "Write Test Cases",
+    "description": "Write unit and integration test cases.",
+    "startdate": "2024-11-11",
+    "enddate": "2024-11-15",
+    "task_status": "notStarted"
+  },
+  {
+    "task_id": 104,
+    "project_id": 2,
+    "employee_id": 11,
+    "title": "Fix Bugs",
+    "description": "Resolve bugs reported during testing.",
+    "startdate": "2024-11-12",
+    "enddate": "2024-11-14",
+    "task_status": "inProgress"
+  },
+  {
+    "task_id": 105,
+    "project_id": 3,
+    "employee_id": 19,
+    "title": "Database Optimization",
+    "description": "Optimize database queries for performance.",
+    "startdate": "2024-11-15",
+    "enddate": "2024-11-18",
+    "task_status": "completed"
+  },
+  {
+    "task_id": 106,
+    "project_id": 3,
+    "employee_id": 19,
+    "title": "UI Enhancements",
+    "description": "Improve UI/UX based on feedback.",
+    "startdate": "2024-11-19",
+    "enddate": "2024-11-20",
+    "task_status": "notStarted"
+  },
+  {
+    "task_id": 107,
+    "project_id": 4,
+    "employee_id": 19,
+    "title": "Security Audit",
+    "description": "Conduct a security audit for the application.",
+    "startdate": "2024-11-10",
+    "enddate": "2024-11-13",
+    "task_status": "completed"
+  },
+  {
+    "task_id": 108,
+    "project_id": 4,
+    "employee_id": 17,
+    "title": "Deployment",
+    "description": "Deploy the application to the production environment.",
+    "startdate": "2024-11-14",
+    "enddate": "2024-11-16",
+    "task_status": "blocked"
+  },
+  {
+    "task_id": 109,
+    "project_id": 5,
+    "employee_id": 18,
+    "title": "Documentation",
+    "description": "Write comprehensive documentation for the project.",
+    "startdate": "2024-11-17",
+    "enddate": "2024-11-19",
+    "task_status": "inProgress"
+  },
+  {
+    "task_id": 110,
+    "project_id": 5,
+    "employee_id": 19,
+    "title": "Code Review",
+    "description": "Review code submissions from team members.",
+    "startdate": "2024-11-18",
+    "enddate": "2024-11-20",
+    "task_status": "completed"
+  }
+]
