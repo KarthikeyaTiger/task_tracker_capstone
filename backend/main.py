@@ -115,7 +115,7 @@ async def create_project(project:ProjectDetailsCreate,db:db_dependency):
 
 @app.get('/project', status_code=status.HTTP_200_OK)
 @app.get('/project/{id}', status_code=status.HTTP_200_OK)
-async def get_task(db: db_dependency, id: Optional[int] = None, employee_id: Optional[int] = Query(None)):
+async def get_task(db: db_dependency, id: Optional[str] = None, employee_id: Optional[int] = Query(None)):
     query = db.query(models.ProjectDetails)
     
     if id:
@@ -132,7 +132,7 @@ async def get_task(db: db_dependency, id: Optional[int] = None, employee_id: Opt
 
 
 @app.delete('/project/{project_id}',status_code=status.HTTP_200_OK)
-async def delete_project(project_id:int,db:db_dependency):
+async def delete_project(project_id:str,db:db_dependency):
     print("project_delete")
 
     tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id)
@@ -149,7 +149,7 @@ async def delete_project(project_id:int,db:db_dependency):
 
 
 @app.put('/project/{project_id}', status_code=status.HTTP_200_OK)
-async def update_project(project_id: int, project_update: ProjectUpdate, db: db_dependency):
+async def update_project(project_id: str, project_update: ProjectUpdate, db: db_dependency):
     project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == project_id).first()
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -206,7 +206,7 @@ async def create_task(task:TaskDetailsCreate,db:db_dependency):
 
 @app.get('/task', status_code=status.HTTP_200_OK)
 @app.get('/task/{id}', status_code=status.HTTP_200_OK)
-async def get_task(db: db_dependency, id: Optional[int] = None, employee_id: Optional[int] = Query(None), project_id: Optional[int] = Query(None)):
+async def get_task(db: db_dependency, id: Optional[str] = None, employee_id: Optional[int] = Query(None), project_id: Optional[str] = Query(None)):
     query = db.query(models.TaskDetails)
     
     if id:
@@ -225,7 +225,7 @@ async def get_task(db: db_dependency, id: Optional[int] = None, employee_id: Opt
 
 
 @app.delete('/task/{task_id}',status_code=status.HTTP_200_OK)
-async def delete_task(task_id:int,db:db_dependency):
+async def delete_task(task_id:str,db:db_dependency):
     print("delete_task")
     task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
     if task is None:
@@ -234,7 +234,7 @@ async def delete_task(task_id:int,db:db_dependency):
     db.commit()
 
 @app.put('/task/{task_id}',status_code=status.HTTP_200_OK)
-async def taskid(task_id:int,task_update:TaskUpdate,db:db_dependency):
+async def taskid(task_id:str,task_update:TaskUpdate,db:db_dependency):
     task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
     if task is None:
         return HTTPException(status_code=404, detail='task Not found')
