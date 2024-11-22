@@ -266,3 +266,17 @@ async def emplyee_tasks(id:int,db:db_dependency):
         print(emp.project_id)
 
     return employee_project
+
+
+@app.get("/employee")
+async def get_employees(db: Session = Depends(get_db)):
+    employees = db.query(models.EmployeeDetails).all()
+    return employees
+
+# Get an employee by ID
+@app.get("/employee/{employee_id}")
+async def get_employee(employee_id: int, db: Session = Depends(get_db)):
+    employee = db.query(models.EmployeeDetails).filter(models.EmployeeDetails.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return employee
