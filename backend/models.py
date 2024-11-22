@@ -7,7 +7,7 @@ class EmployeeDetails(Base):
     __tablename__ = 'employee_details'
 
     id = Column(Integer, primary_key=True) 
-    name = Column(String(20)) 
+    name = Column(String(30)) 
     mail_id = Column(String(50), unique=True)
 
     projects = relationship("ProjectDetails", back_populates="employee")
@@ -17,11 +17,11 @@ class EmployeeDetails(Base):
 class ProjectDetails(Base):
     __tablename__ = 'project_details'
 
-    project_id = Column(Integer,primary_key=True)
+    project_id = Column(String(36),primary_key=True)
     # employee_id = Column(Integer, nullable=False)
     employee_id = Column(Integer, ForeignKey('employee_details.id'), nullable=False)
-    title = Column(String(20),nullable=False)
-    description = Column(String(100))  
+    title = Column(String(100),nullable=False)
+    description = Column(String(1000))  
     startdate = Column(Date)  
     enddate = Column(Date)  
     project_status = Column(String(20))
@@ -35,12 +35,12 @@ class ProjectDetails(Base):
 class TaskDetails(Base):
     __tablename__ = 'task_details'
 
-    task_id = Column(Integer, primary_key=True)  
+    task_id = Column(String(36), primary_key=True)  
     # project_id = Column(Integer, nullable=False) 
-    project_id = Column(Integer, ForeignKey('project_details.project_id'), nullable=False) 
+    project_id = Column(String(36), ForeignKey('project_details.project_id'), nullable=False) 
     employee_id = Column(Integer, ForeignKey('employee_details.id'), nullable=False)
-    title = Column(String(20))  
-    description = Column(String(100)) 
+    title = Column(String(100))  
+    description = Column(String(1000)) 
     startdate = Column(Date) 
     enddate = Column(Date)  
     task_status = Column(String(20))  
