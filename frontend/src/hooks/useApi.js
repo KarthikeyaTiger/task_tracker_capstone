@@ -6,9 +6,6 @@ const useApi = (url, method = "GET", payload=null, headers={}) => {
   const [error, setError] = useState(null);
 
   useEffect (() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
     const fetchData = async () => {
       setLoading(true);
       setError(null);
@@ -41,9 +38,7 @@ const useApi = (url, method = "GET", payload=null, headers={}) => {
     };
 
     fetchData();
-
-    return () => controller.abort();
-  }, [url, method, payload, headers]);
+  }, []);
 
   return { data, loading, error };
 };

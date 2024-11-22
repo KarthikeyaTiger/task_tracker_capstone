@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
-import tasks from '@/tasks.json';
-import useApi from "@/hooks/useApi"
+import React, { useEffect, useState } from 'react'
+import axios from "axios";
+import { useParams } from 'react-router-dom';
+import { z } from "zod"
 
 // custom components
 import AddProject from '@/components/custom/AddProject'
@@ -22,8 +23,55 @@ import { Dot, Plus } from 'lucide-react'
 import TaskTable from '@/components/custom/TaskTable'
 
 const ProjectPage = () => {
-    const { taskData, taskLoading, taskError } = useApi("http://127.0.0.1:8000/task");
-    useEffect(() => {console.log(taskData)}, [taskData])
+    const { projectId } = useParams();
+    const [projectData, setProjectData] = useState([]);
+    const [projectLoading, setProjectLoading] = useState(true);
+    const [projectError, setProjectError] = useState(null);
+    useEffect(() => {
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `http://127.0.0.1:8000/project/${projectId}`,
+            headers: { }
+        };
+        axios.request(config)
+        .then((response) => {
+            setProjectData(response.data);
+            setProjectLoading(false);
+            console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+            setProjectError(error)
+            console.log(error);
+        });
+      }, []);
+
+    const [taskData, setTaskData] = useState([]);
+    const [taskLoading, setTaskLoading] = useState(true);
+    const [taskError, setTaskError] = useState(null);
+    useEffect(() => {
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `http://127.0.0.1:8000/task?project_id=${projectId}`,
+            headers: { }
+        };
+    
+        axios.request(config)
+        .then((response) => {
+            setTaskData(response.data)
+            setTaskLoading(false);
+            // console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+            setTaskError(error)
+            console.log(error);
+        });
+    }, [])
+
+    if (projectLoading) return <p>Loading project details...</p>
+    if (projectError) return <p>{projectError}</p>
+
     return (
         <div className='container max-w-[950px] mx-auto my-10 px-8'>
             <div className='flex justify-between'>
@@ -34,25 +82,32 @@ const ProjectPage = () => {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbPage>Project Name</BreadcrumbPage>
+                            <BreadcrumbPage>{projectData.title}</BreadcrumbPage>
                         </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className='space-x-3'>
-                    <Button variant="outline">Edit</Button>
-                    <AddProject />
+                    <AddProject 
+                    defaultValues = {{
+                        title: projectData.title,
+                        description: projectData.description,
+                        startdate: new Date(projectData.startdate),
+                        enddate: z.date(new Date(projectData.enddate)),
+                    }}
+                    type='edit'
+                    />
                 </div>
             </div>
             <div>
-                <p className="text-2xl font-semibold mt-6">Project Name</p>
+                <p className="text-2xl font-semibold mt-6">{projectData.title}</p>
                 <p className="text-md mt-3 text-zinc-700">
-                    Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem, optio! Atque veritatis qui nulla porro magni voluptas in nostrum molestiae. Suscipit, dolorum sint? Praesentium velit molestias libero modi dolorum amet.
+                    {projectData.description}
                 </p>
             </div>
             <div className='flex space-x-3 my-6'>
-                <p className='text-sm'><span className='text-zinc-700'>Start Date:</span> <span className='font-medium'>Nov 8, 2024</span></p>
+                <p className='text-sm'><span className='text-zinc-700'>Start Date:</span> <span className='font-medium'>{projectData.startdate}</span></p>
                 <Dot />
-                <p className='text-sm'><span className='text-zinc-700'>End Date:</span> <span className='font-medium'>Jan 8, 2025</span></p>
+                <p className='text-sm'><span className='text-zinc-700'>End Date:</span> <span className='font-medium'>{projectData.enddate}</span></p>
             </div>
             <div className='mt-8 flex space-x-3'>
                 <Tabs defaultValue="myTasks" className='grow'>
@@ -64,7 +119,11 @@ const ProjectPage = () => {
                         <Button className="rounded-full p-3"><Plus /></Button>
                     </div>
                     <TabsContent value="myTasks" className="max-w-[85vw]">
-                        <TaskTable data={taskData} />
+                        {taskLoading ? <>Loading data</> : 
+                        (
+                            taskError ? <>error</>:<TaskTable data={taskData} />
+                        )
+                        }
                     </TabsContent>
                     <TabsContent value="allTasks">Change your password here.</TabsContent>
                 </Tabs>
@@ -74,3 +133,8 @@ const ProjectPage = () => {
 }
 
 export default ProjectPage
+
+
+
+
+

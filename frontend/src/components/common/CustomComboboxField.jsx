@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/command";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -47,21 +46,21 @@ const CustomComboboxField = ({ name, control, label, form }) => {
                 <Popover>
                 <PopoverTrigger asChild>
                     <FormControl>
-                    <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                        "justify-between",
-                        !field.value && "text-muted-foreground"
-                        )}
-                    >
-                        {field.value
-                        ? languages.find(
-                            (language) => language.value === field.value
-                            )?.label
-                        : "Select the Project Manager"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                            )}
+                        >
+                            {field.value
+                            ? languages.find(
+                                (language) => language.value === field.value
+                                )?.label
+                            : "Select the Project Manager"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
                     </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
@@ -75,8 +74,7 @@ const CustomComboboxField = ({ name, control, label, form }) => {
                             value={language.label}
                             key={language.value}
                             onSelect={() => {
-                                console.log("selected")
-                                form.setValue("projectManager", language.value);
+                                form.setValue("employee_id", language.value);
                             }}
                             >
                             {language.label}

@@ -22,43 +22,37 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
-// Form Schema
+// Form
 const formSchema = z.object({
     title: z.string(),
     description: z.string(),
     startdate: z.date({
-      required_error: "Start date is required.",
+        required_error: "Start date is required.",
     }),
     enddate: z.date({
-      required_error: "End date is required.",
+        required_error: "Start date is required.",
     }),
     employee_id: z.string(),
-});
-  
+    task_status: z.string()
+})
 
-const AddProject = ({
-    defaultValues = {
-        description: "",
-        startdate: new Date(),
-        enddate: (new Date()).setMonth(new Date().getMonth()+1),
-    },
-    type="add"
-}) => {
+
+const HandleTask = () => {
     const form = useForm({
         resolver: zodResolver(formSchema),
-        defaultValues: defaultValues,
+        defaultValues: {
+            title: "",
+            description: "",
+        },
     })
 
     const onSubmit = (data) => {
-        console.log("Form submitted with data:", data);      
+        console.log("Form submitted with data:", data);
     };
 
     return (
         <Dialog className="mx-10">
-            {type==="add" ?
-                <Button className="my-auto" asChild><DialogTrigger>Add Project</DialogTrigger></Button> :
-                <Button className="my-auto" variant="outline" asChild><DialogTrigger>Edit</DialogTrigger></Button>
-            }
+            <Button asChild><DialogTrigger>Add Project</DialogTrigger></Button>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Project Details</DialogTitle>
@@ -84,18 +78,18 @@ const AddProject = ({
                         <div className='grid grid-cols-2 gap-3'>
                             <CustomDateField 
                                 control={form.control}
-                                name="startdate"
+                                name="start_date"
                                 label="Start Date"
                             />
                             <CustomDateField
                                 control={form.control}
-                                name="enddate"
+                                name="end_date"
                                 label="End Date"
                             />
                         </div>
                         <CustomComboboxField 
                             control={form.control}
-                            name="employee_id"
+                            name="projectManager"
                             label="Project Manager"
                             form={form}
                         />
@@ -107,4 +101,4 @@ const AddProject = ({
     )
 }
 
-export default AddProject
+export default HandleTask

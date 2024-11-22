@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import axios from "axios";
+
 import {
     Table,
     TableBody,
@@ -23,14 +25,48 @@ import {
 import { Ellipsis } from 'lucide-react'
   
 
-const TaskTable = ( {response} ) => {
-    const [data, setData] = useState([])
-
+const TaskTable = ( { data } ) => {
+    const [taskData, setTaskData] = useState([])
+    
     useEffect(() => {
-        if (response) {
-            setData(response);
+        if (data) {
+            setTaskData(data);
         }
-    }, [response])
+    }, [data])
+
+    const changeStatus = (value, task) => {
+        let data = JSON.stringify({
+            "task_status": value
+        });
+
+        let config = {
+            method: 'put',
+            maxBodyLength: Infinity,
+            url: `http://127.0.0.1:8000/task/${task.task_id}`,
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            data : data
+        };
+
+        axios.request(config)
+        .then((response) => {
+            setTaskData(
+                taskData.map(item => {
+                    if (item.task_id == task.task_id) {
+                        return {
+                            ...item, task_status: task.task_status
+                        }
+                    }
+                    return item
+                })
+            )
+            console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    }
 
     return (
         <div className='border rounded-lg my-4'>
@@ -46,10 +82,10 @@ const TaskTable = ( {response} ) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.map(task => (
+                    {taskData.map(task => (
                         <TableRow key={task.task_id}>
                             <TableCell className="font-medium">
-                                <Select defaultValue={task.task_status}>
+                                <Select defaultValue={task.task_status} onValueChange={(value) => {changeStatus(value, task)}}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
