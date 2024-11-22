@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import tasks from '@/tasks.json';
+import useApi from "@/hooks/useApi"
 
 // custom components
 import AddProject from '@/components/custom/AddProject'
@@ -21,7 +22,8 @@ import { Dot, Plus } from 'lucide-react'
 import TaskTable from '@/components/custom/TaskTable'
 
 const ProjectPage = () => {
-    console.log(tasks)
+    const { taskData, taskLoading, taskError } = useApi("http://127.0.0.1:8000/task");
+    useEffect(() => {console.log(taskData)}, [taskData])
     return (
         <div className='container max-w-[950px] mx-auto my-10 px-8'>
             <div className='flex justify-between'>
@@ -62,7 +64,7 @@ const ProjectPage = () => {
                         <Button className="rounded-full p-3"><Plus /></Button>
                     </div>
                     <TabsContent value="myTasks" className="max-w-[85vw]">
-                        <TaskTable data={tasks} />
+                        <TaskTable data={taskData} />
                     </TabsContent>
                     <TabsContent value="allTasks">Change your password here.</TabsContent>
                 </Tabs>
