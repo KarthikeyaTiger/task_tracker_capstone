@@ -1,5 +1,9 @@
+import axios from "axios";
+
+// Icons
 import { Check, ChevronsUpDown } from "lucide-react";
 
+// shadcn ui components
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,20 +26,28 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useEffect, useState } from "react";
 
-const languages = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-];
+const CustomComboboxField = ( { name, control, label, form } ) => {
+    const [employees, setEmployees] = useState([]);
 
-const CustomComboboxField = ({ name, control, label, form }) => {
+    useEffect(() => {
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: 'http://127.0.0.1:8000/employee',
+            headers: { }
+        };
+
+        axios.request(config)
+        .then((response) => {
+            setEmployees(response.data);
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    }, [])
+    
     return (
         <FormField
             control={control}
@@ -55,9 +67,9 @@ const CustomComboboxField = ({ name, control, label, form }) => {
                             )}
                         >
                             {field.value
-                            ? languages.find(
-                                (language) => language.value === field.value
-                                )?.label
+                            ? employees.find(
+                                (employee) => employee.id === field.value
+                                )?.name
                             : "Select the Project Manager"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -69,23 +81,27 @@ const CustomComboboxField = ({ name, control, label, form }) => {
                     <CommandList>
                         <CommandEmpty>No employee found.</CommandEmpty>
                         <CommandGroup>
-                        {languages.map((language) => (
+                        {employees.map((employee) => (
                             <CommandItem
-                            value={language.label}
-                            key={language.value}
+                            value={employee.id}
+                            key={employee.id}
                             onSelect={() => {
-                                form.setValue("employee_id", language.value);
+                                form.setValue("employee_id", employee.id);
                             }}
+                            className="justify-between"
                             >
-                            {language.label}
-                            <Check
-                                className={cn(
-                                "ml-auto",
-                                language.value === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                            />
+                                <div>
+                                    <p className="me-5 text-zinc-600">{employee.id}</p>
+                                    <p>{employee.name}</p>
+                                </div>
+                                <Check
+                                    className={cn(
+                                    "ml-auto",
+                                    employee.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                />
                             </CommandItem>
                         ))}
                         </CommandGroup>

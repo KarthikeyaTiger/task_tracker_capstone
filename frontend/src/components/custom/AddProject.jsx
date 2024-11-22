@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios'
 
 // custom components
 import CustomTextField from "@/components/common/CustomTextField"
@@ -32,7 +33,8 @@ const formSchema = z.object({
     enddate: z.date({
       required_error: "End date is required.",
     }),
-    employee_id: z.string(),
+    employee_id: z.number(),
+    project_status: z.string()
 });
   
 
@@ -41,6 +43,7 @@ const AddProject = ({
         description: "",
         startdate: new Date(),
         enddate: (new Date()).setMonth(new Date().getMonth()+1),
+        project_status: "notStarted"
     },
     type="add"
 }) => {
@@ -50,7 +53,31 @@ const AddProject = ({
     })
 
     const onSubmit = (data) => {
-        console.log("Form submitted with data:", data);      
+        const formattedStartDate = data.startdate.toISOString().split('T')[0];
+        const formattedEndDate = data.enddate.toISOString().split('T')[0];
+        console.log("Form submitted with data:", data);
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: 'http://127.0.0.1:8000/project',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            data : {
+                ...data,
+                startdate: formattedStartDate,
+                enddate: formattedEndDate,
+            }
+        };
+
+        axios.request(config)
+        .then((response) => {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+            console.log(error);
+        });
     };
 
     return (

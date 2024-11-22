@@ -13,19 +13,18 @@ const Dashboard = () =>{
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: 'http://127.0.0.1:8000/task?employee_id=3',
+            url: 'http://127.0.0.1:8000/task?employee_id=1',
             headers: { }
         };
     
         axios.request(config)
         .then((response) => {
-            setTaskData(response.data)
+            setTaskData(response.data);
             setTaskLoading(false);
-            // console.log(JSON.stringify(response.data));
         })
-        .catch((error) => {
-            setTaskError(error)
-            console.log(error);
+        .catch((e) => {
+            setTaskError(e);
+            setTaskLoading(false);
         });
     }, [])
 
@@ -37,7 +36,7 @@ const Dashboard = () =>{
             </div>
             {taskLoading ? <>Loading data</> : 
             (
-                taskError ? <>error</>:<TaskTable data={taskData} />
+                taskError ? <div className='text-center'>{taskError.response.data.detail}</div>:<TaskTable data={taskData} />
             )
             }
             <Projects />

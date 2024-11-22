@@ -38,11 +38,9 @@ const ProjectPage = () => {
         .then((response) => {
             setProjectData(response.data);
             setProjectLoading(false);
-            console.log(JSON.stringify(response.data));
         })
         .catch((error) => {
-            setProjectError(error)
-            console.log(error);
+            setProjectError(error);
         });
       }, []);
 
@@ -61,11 +59,9 @@ const ProjectPage = () => {
         .then((response) => {
             setTaskData(response.data)
             setTaskLoading(false);
-            // console.log(JSON.stringify(response.data));
         })
         .catch((error) => {
-            setTaskError(error)
-            console.log(error);
+            setTaskError(error);
         });
     }, [])
 
