@@ -18,6 +18,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 
+// Icons
+import { Plus } from 'lucide-react'
+
 // form related imports
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -33,21 +36,17 @@ const formSchema = z.object({
     enddate: z.date({
       required_error: "End date is required.",
     }),
+    task_status: z.string(),
     employee_id: z.number(),
-    project_status: z.string()
+    project_id: z.string(),
 });
   
 
-const AddProject = ({ handleSubmit }) => {
+const EditTask = ({ handleSubmit, defaultValues, task_id }) => {
     const [isFromOpen, setIsFormOpen] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            description: "",
-            startdate: new Date(),
-            enddate: (new Date()).setMonth(new Date().getMonth()+1),
-            project_status: "notStarted"
-        },
+        defaultValues: defaultValues,
     })
 
     const onSubmit = (data) => {
@@ -55,9 +54,9 @@ const AddProject = ({ handleSubmit }) => {
         const formattedEndDate = data.enddate.toISOString().split('T')[0];
 
         let config = {
-            method: 'post',
+            method: 'put',
             maxBodyLength: Infinity,
-            url: 'http://127.0.0.1:8000/project',
+            url: `http://127.0.0.1:8000/task/${task_id}`,
             headers: { 
                 'Content-Type': 'application/json'
             },
@@ -80,10 +79,10 @@ const AddProject = ({ handleSubmit }) => {
 
     return (
         <Dialog className="mx-10" open={isFromOpen} onOpenChange={setIsFormOpen}>
-            <Button className="my-auto" asChild><DialogTrigger>Add Project</DialogTrigger></Button>
+            <DialogTrigger className='rounded-sm text-start p-1 px-3 text-sm hover:bg-zinc-100'>Edit</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Project Details</DialogTitle>
+                    <DialogTitle>Task Details</DialogTitle>
                     <DialogDescription>
                         Ensure that the details are entered correctly.
                     </DialogDescription>
@@ -93,8 +92,8 @@ const AddProject = ({ handleSubmit }) => {
                         <CustomTextField
                             control={form.control}
                             name="title"
-                            label="Project Title"
-                            placeholder="Enter the Project Title"
+                            label="Task Title"
+                            placeholder="Enter the Task Title"
                         />
                         <CustomTextField
                             control={form.control}
@@ -118,7 +117,7 @@ const AddProject = ({ handleSubmit }) => {
                         <CustomComboboxField 
                             control={form.control}
                             name="employee_id"
-                            label="Project Manager"
+                            label="Assign Task"
                             form={form}
                         />
                         <Button type="submit" className="w-[100%]">Submit</Button>
@@ -129,4 +128,4 @@ const AddProject = ({ handleSubmit }) => {
     )
 }
 
-export default AddProject
+export default EditTask

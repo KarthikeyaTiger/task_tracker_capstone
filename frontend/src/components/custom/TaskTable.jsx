@@ -23,9 +23,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Ellipsis } from 'lucide-react'
+import EditTask from './EditTask';
+import DeleteProject from './DeleteTask';
   
 
-const TaskTable = ( { data } ) => {
+const TaskTable = ( { data, handleSubmit } ) => {
     const [taskData, setTaskData] = useState([])
     
     useEffect(() => {
@@ -50,7 +52,7 @@ const TaskTable = ( { data } ) => {
         };
 
         axios.request(config)
-        .then((response) => {
+        .then(() => {
             setTaskData(
                 taskData.map(item => {
                     if (item.task_id == task.task_id) {
@@ -61,7 +63,6 @@ const TaskTable = ( { data } ) => {
                     return item
                 })
             )
-            console.log(JSON.stringify(response.data));
         })
         .catch((error) => {
             console.log(error);
@@ -70,7 +71,7 @@ const TaskTable = ( { data } ) => {
 
     return (
         <div className='border rounded-lg my-4'>
-            <Table className="">
+            <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="min-w-[150px]">Status</TableHead>
@@ -90,8 +91,8 @@ const TaskTable = ( { data } ) => {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="inProgress">In Progress</SelectItem>
                                         <SelectItem value="notStarted">Not Started</SelectItem>
+                                        <SelectItem value="inProgress">In Progress</SelectItem>
                                         <SelectItem value="blocked">Blocked</SelectItem>
                                         <SelectItem value="completed">Completed</SelectItem>
                                     </SelectContent>
@@ -104,9 +105,25 @@ const TaskTable = ( { data } ) => {
                             <TableCell>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger><Ellipsis size={14} /></DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                                    <DropdownMenuContent className="flex flex-col justify-start space-y-1">
+                                        <EditTask
+                                            defaultValues={{
+                                                title: task.title,
+                                                description: task.description,
+                                                startdate: new Date(task.startdate),
+                                                enddate: new Date(task.enddate),
+                                                task_status: task.task_status,
+                                                employee_id: task.employee_id,
+                                                project_id: task.project_id,
+                                            }}
+                                            handleSubmit = {handleSubmit}
+                                            task_id = {task.task_id}
+                                            asChild
+                                        />
+                                        <DeleteProject
+                                            handleSubmit={handleSubmit}
+                                            task_id={task.task_id}
+                                        />
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
