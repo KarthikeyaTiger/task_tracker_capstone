@@ -38,26 +38,22 @@ const formSchema = z.object({
 });
   
 
-const AddProject = ({ handleSubmit }) => {
+const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
     const [isFromOpen, setIsFormOpen] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            description: "",
-            startdate: new Date(),
-            enddate: (new Date()).setMonth(new Date().getMonth()+1),
-            project_status: "notStarted"
-        },
+        defaultValues: defaultValues,
     })
 
     const onSubmit = (data) => {
+        console.log("hi")
         const formattedStartDate = data.startdate.toISOString().split('T')[0];
         const formattedEndDate = data.enddate.toISOString().split('T')[0];
 
         let config = {
-            method: 'post',
+            method: 'put',
             maxBodyLength: Infinity,
-            url: 'http://127.0.0.1:8000/project',
+            url: `http://127.0.0.1:8000/project/${project_id}`,
             headers: { 
                 'Content-Type': 'application/json'
             },
@@ -70,8 +66,8 @@ const AddProject = ({ handleSubmit }) => {
 
         axios.request(config)
         .then(() => {
-            handleSubmit()
             setIsFormOpen(false);
+            handleSubmit();
         })
         .catch((error) => {
             console.log(error);
@@ -80,7 +76,9 @@ const AddProject = ({ handleSubmit }) => {
 
     return (
         <Dialog className="mx-10" open={isFromOpen} onOpenChange={setIsFormOpen}>
-            <Button className="my-auto" asChild><DialogTrigger>Add Project</DialogTrigger></Button>
+            <Button className="my-auto" variant="outline" asChild>
+                <DialogTrigger>Edit</DialogTrigger>
+            </Button>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Project Details</DialogTitle>
@@ -129,4 +127,4 @@ const AddProject = ({ handleSubmit }) => {
     )
 }
 
-export default AddProject
+export default EditProject

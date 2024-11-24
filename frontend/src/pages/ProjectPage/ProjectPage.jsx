@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import axios from "axios";
 import { useParams } from 'react-router-dom';
-import { z } from "zod"
 
 // custom components
-import AddProject from '@/components/custom/AddProject'
+import TaskTable from '@/components/custom/TaskTable'
+import EditProject from '@/components/custom/EditProject';
 
 // shadcn ui components
 import {
@@ -19,53 +19,61 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Icons
-import { Dot, Plus } from 'lucide-react'
-import TaskTable from '@/components/custom/TaskTable'
+import { Dot } from 'lucide-react'
+import fetchData from '@/hooks/fetchData';
+import DeleteProject from '@/components/custom/DeleteProject';
+import AddTask from '@/components/custom/AddTask';
 
 const ProjectPage = () => {
     const { projectId } = useParams();
-    const [projectData, setProjectData] = useState([]);
+
+    const [projectData, setProjectData] = useState(null);
     const [projectLoading, setProjectLoading] = useState(true);
     const [projectError, setProjectError] = useState(null);
-    useEffect(() => {
-        let config = {
-            method: 'get',
-            maxBodyLength: Infinity,
-            url: `http://127.0.0.1:8000/project/${projectId}`,
-            headers: { }
-        };
-        axios.request(config)
-        .then((response) => {
-            setProjectData(response.data);
-            setProjectLoading(false);
-        })
-        .catch((error) => {
-            setProjectError(error);
-        });
-      }, []);
-
-    const [taskData, setTaskData] = useState([]);
+    
+    const [taskData, setTaskData] = useState(null);
     const [taskLoading, setTaskLoading] = useState(true);
     const [taskError, setTaskError] = useState(null);
-    useEffect(() => {
-        let config = {
-            method: 'get',
-            maxBodyLength: Infinity,
-            url: `http://127.0.0.1:8000/task?project_id=${projectId}`,
-            headers: { }
-        };
-    
-        axios.request(config)
-        .then((response) => {
-            setTaskData(response.data)
-            setTaskLoading(false);
-        })
-        .catch((error) => {
+
+    const fetchProjectData = async () => {
+        try {
+            const data = await fetchData(`http://127.0.0.1:8000/project/${projectId}`);
+            if (data) {
+                setProjectData(data);
+            }
+        } catch (error) {
+            setProjectError(error);
+            console.error("Error fetching project data:", error);
+        }
+    }
+
+    const fetchTaskData = async () => {
+        try {
+            const data = await fetchData(`http://127.0.0.1:8000/task?project_id=${projectId}`);
+            if (data) {
+                setTaskData(data);
+            }
+        } catch (error) {
             setTaskError(error);
-        });
+            console.error("Error fetching project data:", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchProjectData();
+        fetchTaskData();
     }, [])
 
-    if (projectLoading) return <p>Loading project details...</p>
+    useEffect(() => {
+        if (projectData) {
+            setProjectLoading(false);
+        }
+        if (taskData) {
+            setTaskLoading(false);
+        }
+    }, [projectData, taskData])
+
+    if (projectLoading) return <p className='text-center mt-52'>Loading project details...</p>
     if (projectError) return <p>{projectError}</p>
 
     return (
@@ -82,16 +90,20 @@ const ProjectPage = () => {
                         </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>
-                <div className='space-x-3'>
-                    <AddProject 
-                    defaultValues = {{
-                        title: projectData.title,
-                        description: projectData.description,
-                        startdate: new Date(projectData.startdate),
-                        enddate: z.date(new Date(projectData.enddate)),
-                    }}
-                    type='edit'
+                <div className='space-x-3 flex'>
+                    <EditProject
+                        handleSubmit= {fetchProjectData}
+                        defaultValues={{
+                            title: projectData.title,
+                            description: projectData.description,
+                            startdate: new Date(projectData.startdate),
+                            enddate: new Date(projectData.enddate),
+                            employee_id: projectData.employee_id,
+                            project_status: projectData.project_status
+                        }}
+                        project_id={projectData.project_id}
                     />
+                    <DeleteProject project_id={projectData.project_id} />
                 </div>
             </div>
             <div>
@@ -112,13 +124,16 @@ const ProjectPage = () => {
                             <TabsTrigger value="myTasks" className="rounded-full grow">My Tasks</TabsTrigger>
                             <TabsTrigger value="allTasks" className="rounded-full grow">All Tasks</TabsTrigger>
                         </TabsList>
-                        <Button className="rounded-full p-3"><Plus /></Button>
+                        <AddTask
+                            handleSubmit= {fetchTaskData}
+                            project_id={projectId}
+                        />
                     </div>
                     <TabsContent value="myTasks" className="max-w-[85vw]">
-                        {taskLoading ? <>Loading data</> : 
-                        (
-                            taskError ? <>error</>:<TaskTable data={taskData} />
-                        )
+                        {taskLoading ? <>Loading data</> :
+                            (
+                                taskError ? <>Error loading the tasks</> : <TaskTable handleSubmit={fetchTaskData} data={taskData} />
+                            )
                         }
                     </TabsContent>
                     <TabsContent value="allTasks">Change your password here.</TabsContent>
@@ -129,8 +144,3 @@ const ProjectPage = () => {
 }
 
 export default ProjectPage
-
-
-
-
-
