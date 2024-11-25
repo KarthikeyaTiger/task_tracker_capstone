@@ -30,6 +30,7 @@ import DeleteProject from './DeleteTask';
 const TaskTable = ( { data, handleSubmit } ) => {
     const [taskData, setTaskData] = useState([])
     
+    console.log(data)
     useEffect(() => {
         if (data) {
             setTaskData(data);

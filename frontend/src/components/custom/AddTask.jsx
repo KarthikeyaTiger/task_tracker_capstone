@@ -28,17 +28,19 @@ import { useForm } from "react-hook-form"
 
 // Form Schema
 const formSchema = z.object({
-    title: z.string(),
-    description: z.string(),
-    startdate: z.date({
-      required_error: "Start date is required.",
+    task: z.object({
+        title: z.string(),
+        description: z.string(),
+        startdate: z.date({
+          required_error: "Start date is required.",
+        }),
+        enddate: z.date({
+          required_error: "End date is required.",
+        }),
+        task_status: z.string(),
+        project_id: z.string(),
     }),
-    enddate: z.date({
-      required_error: "End date is required.",
-    }),
-    task_status: z.string(),
-    employee_id: z.number(),
-    project_id: z.string(),
+    employees: z.string().array(),
 });
   
 
@@ -47,17 +49,19 @@ const AddTask = ({ handleSubmit, project_id }) => {
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            description: "",
-            startdate: new Date(),
-            enddate: (new Date()).setMonth(new Date().getMonth()+1),
-            task_status: "notStarted",
-            project_id: project_id
+            task: {
+                description: "",
+                startdate: new Date(),
+                enddate: (new Date()).setMonth(new Date().getMonth()+1),
+                task_status: "notStarted",
+                project_id: project_id,
+            },
         },
     })
 
     const onSubmit = (data) => {
-        const formattedStartDate = data.startdate.toISOString().split('T')[0];
-        const formattedEndDate = data.enddate.toISOString().split('T')[0];
+        const formattedStartDate = data.task.startdate.toISOString().split('T')[0];
+        const formattedEndDate = data.task.enddate.toISOString().split('T')[0];
 
         let config = {
             method: 'post',
@@ -68,8 +72,11 @@ const AddTask = ({ handleSubmit, project_id }) => {
             },
             data : {
                 ...data,
-                startdate: formattedStartDate,
-                enddate: formattedEndDate,
+                task: {
+                    ...data.task,
+                    startdate: formattedStartDate,
+                    enddate: formattedEndDate,
+                }
             }
         };
 
@@ -97,13 +104,13 @@ const AddTask = ({ handleSubmit, project_id }) => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <CustomTextField
                             control={form.control}
-                            name="title"
+                            name="task.title"
                             label="Task Title"
                             placeholder="Enter the Task Title"
                         />
                         <CustomTextField
                             control={form.control}
-                            name="description"
+                            name="task.description"
                             label="Description"
                             placeholder="Enter the Description"
                             textarea
@@ -111,20 +118,22 @@ const AddTask = ({ handleSubmit, project_id }) => {
                         <div className='grid grid-cols-2 gap-3'>
                             <CustomDateField 
                                 control={form.control}
-                                name="startdate"
+                                name="task.startdate"
                                 label="Start Date"
                             />
                             <CustomDateField
                                 control={form.control}
-                                name="enddate"
+                                name="task.enddate"
                                 label="End Date"
                             />
                         </div>
                         <CustomComboboxField 
-                            control={form.control}
-                            name="employee_id"
+                            name="employees"
+                            placeholder="Select Employees for Task"
                             label="Assign Task"
+                            control={form.control}
                             form={form}
+                            url="http://127.0.0.1:8000/employee"
                         />
                         <Button type="submit" className="w-[100%]">Submit</Button>
                     </form>

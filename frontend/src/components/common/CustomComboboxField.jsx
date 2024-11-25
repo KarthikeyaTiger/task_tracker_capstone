@@ -71,56 +71,57 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url } )
                 <FormItem className="flex flex-col">
                     <FormLabel>{label}</FormLabel>
                     <Popover>
-                    <PopoverTrigger asChild>
-                        <FormControl>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn(
-                                "justify-between",
-                                !field.value && "text-muted-foreground"
-                                )}
-                            >
-                                {placeholder}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0">
-                        <Command>
-                        <CommandInput placeholder="Search employee..." />
-                        <CommandList>
-                            <CommandEmpty>No employee found.</CommandEmpty>
-                            <CommandGroup>
-                            {data.map((datum) => (
-                                <CommandItem
-                                    value={datum.name}
-                                    key={datum.employee_id}
-                                    onSelect={() => {
-                                        if (!selectedItems.includes(datum.employee_id)) {
-                                            setSelectedItems([...selectedItems, datum.employee_id]);
-                                        }
-                                    }}
-                                    className="justify-between"
+                        <PopoverTrigger className="p-0 max-h-60 overflow-y-auto" asChild>
+                            <FormControl>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                    "justify-between",
+                                    "px-3",
+                                    !field.value && "text-muted-foreground"
+                                    )}
                                 >
-                                    <div>
-                                        <p>{datum.name}</p>
-                                        <p className="me-5 text-zinc-600">{datum.email_id}</p>
-                                    </div>
-                                    <Check
-                                        className={cn(
-                                        "ml-auto",
-                                        selectedItems.includes(datum.employee_id)
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                    />
-                                </CommandItem>
-                            ))}
-                            </CommandGroup>
-                        </CommandList>
-                        </Command>
-                    </PopoverContent>
+                                    {placeholder}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0">
+                            <Command>
+                            <CommandInput placeholder="Search employee..." />
+                            <CommandList>
+                                <CommandEmpty>No employee found.</CommandEmpty>
+                                <CommandGroup>
+                                    {data.map((datum) => (
+                                        <CommandItem
+                                            value={datum.name}
+                                            key={datum.employee_id}
+                                            onSelect={() => {
+                                                if (!selectedItems.includes(datum.employee_id)) {
+                                                    setSelectedItems([...selectedItems, datum.employee_id]);
+                                                }
+                                            }}
+                                            className="justify-between"
+                                        >
+                                            <div>
+                                                <p>{datum.name}</p>
+                                                <p className="me-5 text-zinc-600">{datum.email_id}</p>
+                                            </div>
+                                            <Check
+                                                className={cn(
+                                                "ml-auto",
+                                                selectedItems.includes(datum.employee_id)
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                            />
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                            </Command>
+                        </PopoverContent>
                     </Popover>
                     <FormMessage />
                 </FormItem>
