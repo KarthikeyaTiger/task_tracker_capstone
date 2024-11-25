@@ -25,34 +25,40 @@ import { useForm } from "react-hook-form"
 
 // Form Schema
 const formSchema = z.object({
-    title: z.string(),
-    description: z.string(),
-    startdate: z.date({
-      required_error: "Start date is required.",
+    project: z.object({
+        title: z.string(),
+        description: z.string(),
+        startdate: z.date({
+        required_error: "Start date is required.",
+        }),
+        enddate: z.date({
+        required_error: "End date is required.",
+        }),
+        project_status: z.string(),
     }),
-    enddate: z.date({
-      required_error: "End date is required.",
-    }),
-    employee_id: z.number(),
-    project_status: z.string()
+    employee_id: z.number().array(),
 });
   
 
 const AddProject = ({ handleSubmit }) => {
     const [isFromOpen, setIsFormOpen] = useState(false);
+    
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            description: "",
-            startdate: new Date(),
-            enddate: (new Date()).setMonth(new Date().getMonth()+1),
-            project_status: "notStarted"
+            project: {
+              description: "",
+              startdate: new Date(),
+              enddate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+              project_status: "notStarted",
+            }
         },
     })
 
     const onSubmit = (data) => {
-        const formattedStartDate = data.startdate.toISOString().split('T')[0];
-        const formattedEndDate = data.enddate.toISOString().split('T')[0];
+        console.log(data)
+        const formattedStartDate = data.project.startdate.toISOString().split('T')[0];
+        const formattedEndDate = data.project.enddate.toISOString().split('T')[0];
 
         let config = {
             method: 'post',
@@ -116,10 +122,12 @@ const AddProject = ({ handleSubmit }) => {
                             />
                         </div>
                         <CustomComboboxField 
-                            control={form.control}
                             name="employee_id"
                             label="Project Manager"
+                            placeholder="Select the Project Managers"
+                            control={form.control}
                             form={form}
+                            url="http://127.0.0.1:8000/employee"
                         />
                         <Button type="submit" className="w-[100%]">Submit</Button>
                     </form>
