@@ -69,6 +69,7 @@ class EmployeeTasksDetails(Base):
 
     employee_id = Column(String(36),ForeignKey('employee_details.employee_id'),primary_key=True)
     task_id = Column(String(36),ForeignKey('task_details.task_id'),primary_key=True)
+    role = Column(String(10))
 
     task = relationship("TaskDetails",back_populates="assigned_tasks")
     employees = relationship("EmployeeDetails",back_populates="assigned_employee")

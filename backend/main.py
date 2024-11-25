@@ -37,7 +37,7 @@ class ProjectDetailsCreate(BaseModel):
 
 class CreateProject(BaseModel):
     project: ProjectDetailsCreate
-    extras: List[str]
+    employees: List[str]
 
 class ProjectUpdate(BaseModel):
     title: Optional[str] = None
@@ -45,6 +45,10 @@ class ProjectUpdate(BaseModel):
     startdate: Optional[date] = None
     enddate: Optional[date] = None
     project_status: Optional[str] = None
+
+class UpdateProject(BaseModel):
+    project: ProjectUpdate
+    employee_id: Optional[List[str]] = None
 
 class TaskDetailsCreate(BaseModel):
     project_id: str
@@ -58,7 +62,7 @@ class TaskDetailsCreate(BaseModel):
 
 class Createtask(BaseModel):
     task: TaskDetailsCreate
-    extras: List[str]
+    employees: List[str]
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
@@ -66,6 +70,10 @@ class TaskUpdate(BaseModel):
     startdate: Optional[date] = None
     enddate: Optional[date] = None
     task_status: Optional[str] = None
+
+class UpdateTask(BaseModel):
+    task: TaskUpdate
+    employee_id: List[str]
 
 {
 # class TaskDetailsResponse(BaseModel):
@@ -81,6 +89,7 @@ class TaskUpdate(BaseModel):
 class EmployeeProjectDetails(BaseModel):
     project_id: str
     employee_id: str
+    role: str
 
 def get_db():
     db = SessionLocal()
@@ -106,9 +115,9 @@ async def create_project(project_details:CreateProject,db:db_dependency):
     db_project=models.ProjectDetails(project_id=project_id,**project.model_dump())
     db.add(db_project)
     db.commit()
-    for extra in project_details.extras:
-        print(extra)
-        db_employeeproject =  models.EmployeeProjectsDetails(project_id=project_id,employee_id=extra)
+    for employee in project_details.employees:
+        print(employee)
+        db_employeeproject =  models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
         db.add(db_employeeproject)
         db.commit()
     print("end")
@@ -185,15 +194,26 @@ async def delete_project(project_id:str,db:db_dependency):
 
 
 @app.put('/project/{project_id}', status_code=status.HTTP_200_OK)
-async def update_project(project_id: str, project_update: ProjectUpdate, db: db_dependency):
+async def update_project(project_id: str, project_update: UpdateProject, db: db_dependency):
     project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == project_id).first()
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    for key, value in project_update.model_dump(exclude_unset=True).items():
+    for key, value in project_update.project.model_dump(exclude_unset=True).items():
         setattr(project, key, value) 
     
     db.commit() 
+
+    projectemployee = db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).all()
+    
+    for pro in projectemployee:
+        db.delete(pro)
+        db.commit()
+
+    for employee in project_update.employee_id:
+        db_projectemployee=models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
+        db.add(db_projectemployee)
+        db.commit()
 
 
 
@@ -223,9 +243,9 @@ async def create_task(task_details:Createtask,db:db_dependency):
     db.add(db_task)
     db.commit()
 
-    for extra in task_details.extras:
-        print(extra)
-        db_employeetask = models.EmployeeTasksDetails(task_id=task_id,employee_id=extra)
+    for employee in task_details.employees:
+        print(employee)
+        db_employeetask = models.EmployeeTasksDetails(task_id=task_id,employee_id=employee)
         db.add(db_employeetask)
         db.commit()
 
@@ -291,13 +311,26 @@ async def delete_task(task_id:str,db:db_dependency):
     db.commit()
 
 @app.put('/task/{task_id}',status_code=status.HTTP_200_OK)
-async def taskid(task_id:str,task_update:TaskUpdate,db:db_dependency):
+async def taskid(task_id:str,task_update:UpdateTask,db:db_dependency):
     task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
     if task is None:
         return HTTPException(status_code=404, detail='task Not found')
-    for key, value in task_update.model_dump(exclude_unset=True).items():
+    for key, value in task_update.task.model_dump(exclude_unset=True).items():
         setattr(task, key, value) 
     db.commit()
+
+    taskemployee = db.query(models.EmployeeTasksDetails).filter(models.EmployeeTasksDetails.task_id == task_id).all()
+    
+    for task in taskemployee:
+        db.delete(task)
+        db.commit()
+
+    for employee in task_update.employee_id:
+        db_projectemployee=models.EmployeeTasksDetails(task_id=task_id,employee_id=employee)
+        db.add(db_projectemployee)
+        db.commit()
+
+
 
 
 {
