@@ -1,15 +1,16 @@
+import { useEffect, useState } from "react";
 import axios from "axios";
+import fetchData from '@/hooks/fetchData'
 
 // Icons
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, X } from "lucide-react";
 
 // shadcn ui components
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
+    Command,
+    CommandEmpty,
+    CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
@@ -22,14 +23,40 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-const CustomComboboxField = ( { name, control, label, form } ) => {
-    const [employees, setEmployees] = useState([]);
+const CustomComboboxField = ( { name, control, label, form, placeholder, url } ) => {
+    const [data, setData] = useState([]);
+    const [dataLoading, setDataLoading] = useState([]);
+    const [dataError, setDataError] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
+
+    const fetchDataItems = async () => {
+        try {
+            const itemData = await fetchData(url);
+            if (itemData) {
+                setData(itemData);
+            }
+        } catch (error) {
+            setDataError(error);
+            console.error("Error fetching project data:", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchDataItems();
+    }, [])
+
+    useEffect(() => {
+        if (data) {
+            setDataLoading(false);
+        }
+    }, [data])
 
     useEffect(() => {
         let config = {
@@ -41,14 +68,17 @@ const CustomComboboxField = ( { name, control, label, form } ) => {
 
         axios.request(config)
         .then((response) => {
-            setEmployees(response.data);
+            setData(response.data);
         })
         .catch((error) => {
             console.log(error);
         });
     }, [])
+
+    useEffect(() => {form.setValue("employee_id", selectedItems);}, [selectedItems])
     
     return (
+        <>
         <FormField
             control={control}
             name={name}
@@ -66,11 +96,7 @@ const CustomComboboxField = ( { name, control, label, form } ) => {
                             !field.value && "text-muted-foreground"
                             )}
                         >
-                            {field.value
-                            ? employees.find(
-                                (employee) => employee.id === field.value
-                                )?.name
-                            : "Select the Project Manager"}
+                            {placeholder}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                     </FormControl>
@@ -81,23 +107,26 @@ const CustomComboboxField = ( { name, control, label, form } ) => {
                     <CommandList>
                         <CommandEmpty>No employee found.</CommandEmpty>
                         <CommandGroup>
-                        {employees.map((employee) => (
+                        {data.map((datum) => (
                             <CommandItem
-                            value={employee.id}
-                            key={employee.id}
-                            onSelect={() => {
-                                form.setValue("employee_id", employee.id);
-                            }}
-                            className="justify-between"
+                                value={datum.id}
+                                key={datum.id}
+                                onSelect={() => {
+                                    if (!selectedItems.includes(datum.id)) {
+                                        setSelectedItems([...selectedItems, datum.id]);
+                                    }
+                                    console.log(selectedItems)
+                                }}
+                                className="justify-between"
                             >
                                 <div>
-                                    <p className="me-5 text-zinc-600">{employee.id}</p>
-                                    <p>{employee.name}</p>
+                                    <p className="me-5 text-zinc-600">{datum.id}</p>
+                                    <p>{datum.name}</p>
                                 </div>
                                 <Check
                                     className={cn(
                                     "ml-auto",
-                                    employee.id === field.value
+                                    selectedItems.includes(datum.id)
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
@@ -113,6 +142,24 @@ const CustomComboboxField = ( { name, control, label, form } ) => {
             </FormItem>
             )}
         />
+        {selectedItems.length === 0 ?
+        <></>:
+        <div>
+            <p className="text-sm font-normal">Selected Employees</p>
+            {selectedItems.map((item, index)=>(
+                <Button
+                    className="rounded-full text-xs p-1 px-3 m-1"
+                    key={index} 
+                    variant="outline"
+                    onClick={()=> {setSelectedItems(selectedItems.filter(id => id !== item))}}
+                    asChild
+                >
+                    <Badge variant="outline">{(data.find(i => i.id === item)).name}<X size={16} /></Badge>
+                </Button>
+            ))}
+        </div>
+        }
+        </>
     );
 };
 
