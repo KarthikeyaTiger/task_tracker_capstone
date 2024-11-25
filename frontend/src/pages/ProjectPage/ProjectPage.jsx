@@ -94,12 +94,15 @@ const ProjectPage = () => {
                     <EditProject
                         handleSubmit= {fetchProjectData}
                         defaultValues={{
-                            title: projectData.title,
-                            description: projectData.description,
-                            startdate: new Date(projectData.startdate),
-                            enddate: new Date(projectData.enddate),
-                            employee_id: projectData.employee_id,
-                            project_status: projectData.project_status
+                            project: {
+                                title: projectData.title,
+                                description: projectData.description,
+                                startdate: new Date(projectData.startdate),
+                                enddate: new Date(projectData.enddate),
+                                project_status: projectData.project_status
+                            },
+                            employees: projectData.employees,
+
                         }}
                         project_id={projectData.project_id}
                     />

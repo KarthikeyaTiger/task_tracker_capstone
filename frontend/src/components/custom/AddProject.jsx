@@ -36,7 +36,7 @@ const formSchema = z.object({
         }),
         project_status: z.string(),
     }),
-    employee_id: z.number().array(),
+    employees: z.string().array(),
 });
   
 
@@ -47,18 +47,27 @@ const AddProject = ({ handleSubmit }) => {
         resolver: zodResolver(formSchema),
         defaultValues: {
             project: {
-              description: "",
-              startdate: new Date(),
-              enddate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-              project_status: "notStarted",
-            }
+                title: "",
+                description: "",
+                startdate: new Date(),
+                enddate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                project_status: "notStarted",
+            },
+            employees: []
         },
     })
 
     const onSubmit = (data) => {
-        console.log(data)
         const formattedStartDate = data.project.startdate.toISOString().split('T')[0];
         const formattedEndDate = data.project.enddate.toISOString().split('T')[0];
+        console.log({
+            ...data,
+            project: {
+                ...data.project,
+                startdate: formattedStartDate,
+                enddate: formattedEndDate,
+            }
+        })
 
         let config = {
             method: 'post',
@@ -69,8 +78,11 @@ const AddProject = ({ handleSubmit }) => {
             },
             data : {
                 ...data,
-                startdate: formattedStartDate,
-                enddate: formattedEndDate,
+                project: {
+                    ...data.project,
+                    startdate: formattedStartDate,
+                    enddate: formattedEndDate,
+                }
             }
         };
 
@@ -98,13 +110,13 @@ const AddProject = ({ handleSubmit }) => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <CustomTextField
                             control={form.control}
-                            name="title"
+                            name="project.title"
                             label="Project Title"
                             placeholder="Enter the Project Title"
                         />
                         <CustomTextField
                             control={form.control}
-                            name="description"
+                            name="project.description"
                             label="Description"
                             placeholder="Enter the Description"
                             textarea
@@ -112,17 +124,17 @@ const AddProject = ({ handleSubmit }) => {
                         <div className='grid grid-cols-2 gap-3'>
                             <CustomDateField 
                                 control={form.control}
-                                name="startdate"
+                                name="project.startdate"
                                 label="Start Date"
                             />
                             <CustomDateField
                                 control={form.control}
-                                name="enddate"
+                                name="project.enddate"
                                 label="End Date"
                             />
                         </div>
                         <CustomComboboxField 
-                            name="employee_id"
+                            name="employees"
                             label="Project Manager"
                             placeholder="Select the Project Managers"
                             control={form.control}
