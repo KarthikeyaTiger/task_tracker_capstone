@@ -6,12 +6,13 @@ from database import Base
 class EmployeeDetails(Base):
     __tablename__ = 'employee_details'
 
-    id = Column(Integer, primary_key=True) 
+    employee_id = Column(String(36), primary_key=True) 
     name = Column(String(30)) 
-    mail_id = Column(String(50), unique=True)
+    email_id = Column(String(50), unique=True)
 
-    projects = relationship("ProjectDetails", back_populates="employee")
-    assigned_tasks = relationship("TaskDetails",back_populates="emp")
+    projects = relationship("EmployeeProjectsDetails", back_populates="employee")
+    assigned_employee = relationship("EmployeeTasksDetails", back_populates="employees")
+    # assigned_tasks = relationship("TaskDetails",back_populates="emp")
 
 
 class ProjectDetails(Base):
@@ -19,26 +20,28 @@ class ProjectDetails(Base):
 
     project_id = Column(String(36),primary_key=True)
     # employee_id = Column(Integer, nullable=False)
-    employee_id = Column(Integer, ForeignKey('employee_details.id'), nullable=False)
+    # employee_id = Column(Integer, ForeignKey('employee_details.id'), nullable=False)
     title = Column(String(100),nullable=False)
     description = Column(String(1000))  
     startdate = Column(Date)  
     enddate = Column(Date)  
     project_status = Column(String(20))
+
     # email_id = Column(String(50))
+    # employee = relationship("EmployeeDetails", back_populates="projects")
 
-    employee = relationship("EmployeeDetails", back_populates="projects")
 
-    tasks = relationship("TaskDetails",back_populates="project")
+    employeeprojects = relationship("EmployeeProjectsDetails",back_populates="project")
+    tasks = relationship("TaskDetails",back_populates="assigned_project")
 
 
 class TaskDetails(Base):
     __tablename__ = 'task_details'
 
     task_id = Column(String(36), primary_key=True)  
-    # project_id = Column(Integer, nullable=False) 
-    project_id = Column(String(36), ForeignKey('project_details.project_id'), nullable=False) 
-    employee_id = Column(Integer, ForeignKey('employee_details.id'), nullable=False)
+    project_id = Column(String(36), ForeignKey('project_details.project_id'), nullable=False)
+    # project_id = Column(Integer, nullable=False)  
+    # employee_id = Column(Integer, ForeignKey('employee_details.id'), nullable=False)
     title = Column(String(100))  
     description = Column(String(1000)) 
     startdate = Column(Date) 
@@ -46,5 +49,26 @@ class TaskDetails(Base):
     task_status = Column(String(20))  
     # email_id = Column(String(50))
 
-    project = relationship("ProjectDetails", back_populates="tasks")
-    emp = relationship("EmployeeDetails",back_populates="assigned_tasks")
+    assigned_project = relationship("ProjectDetails", back_populates="tasks")
+    assigned_tasks = relationship("EmployeeTasksDetails",back_populates="task")
+    # emp = relationship("EmployeeDetails",back_populates="assigned_tasks")
+
+
+class EmployeeProjectsDetails(Base):
+    __tablename__ = "employee_projects"
+
+    project_id = Column(String(36),ForeignKey('project_details.project_id'),primary_key=True)
+    employee_id = Column(String(36),ForeignKey('employee_details.employee_id'),primary_key=True)
+
+    employee = relationship("EmployeeDetails", back_populates="projects")
+    project = relationship("ProjectDetails",back_populates="employeeprojects")
+
+
+class EmployeeTasksDetails(Base):
+    __tablename__ = "employee_tasks"
+
+    employee_id = Column(String(36),ForeignKey('employee_details.employee_id'),primary_key=True)
+    task_id = Column(String(36),ForeignKey('task_details.task_id'),primary_key=True)
+
+    task = relationship("TaskDetails",back_populates="assigned_tasks")
+    employees = relationship("EmployeeDetails",back_populates="assigned_employee")

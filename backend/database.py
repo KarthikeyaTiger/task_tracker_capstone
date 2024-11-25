@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 
-URL_DATABASE='mysql+pymysql://root:1234@localhost:3306/task_tracker'
+URL_DATABASE='mysql+pymysql://root:Karthikeya9503@localhost:3306/task_tracker'
 
 
 engine = create_engine(URL_DATABASE)
