@@ -25,16 +25,18 @@ import { useForm } from "react-hook-form"
 
 // Form Schema
 const formSchema = z.object({
-    title: z.string(),
-    description: z.string(),
-    startdate: z.date({
-      required_error: "Start date is required.",
+    project: z.object({
+        title: z.string(),
+        description: z.string(),
+        startdate: z.date({
+        required_error: "Start date is required.",
+        }),
+        enddate: z.date({
+        required_error: "End date is required.",
+        }),
+        project_status: z.string(),
     }),
-    enddate: z.date({
-      required_error: "End date is required.",
-    }),
-    employee_id: z.number(),
-    project_status: z.string()
+    employees: z.string().array(),
 });
   
 
@@ -47,8 +49,8 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
 
     const onSubmit = (data) => {
         console.log("hi")
-        const formattedStartDate = data.startdate.toISOString().split('T')[0];
-        const formattedEndDate = data.enddate.toISOString().split('T')[0];
+        const formattedStartDate = data.project.startdate.toISOString().split('T')[0];
+        const formattedEndDate = data.project.enddate.toISOString().split('T')[0];
 
         let config = {
             method: 'put',
@@ -59,8 +61,11 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
             },
             data : {
                 ...data,
-                startdate: formattedStartDate,
-                enddate: formattedEndDate,
+                project: {
+                    ...data.project,
+                    startdate: formattedStartDate,
+                    enddate: formattedEndDate,
+                }
             }
         };
 
@@ -90,13 +95,13 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <CustomTextField
                             control={form.control}
-                            name="title"
+                            name="project.title"
                             label="Project Title"
                             placeholder="Enter the Project Title"
                         />
                         <CustomTextField
                             control={form.control}
-                            name="description"
+                            name="project.description"
                             label="Description"
                             placeholder="Enter the Description"
                             textarea
@@ -104,20 +109,22 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
                         <div className='grid grid-cols-2 gap-3'>
                             <CustomDateField 
                                 control={form.control}
-                                name="startdate"
+                                name="project.startdate"
                                 label="Start Date"
                             />
                             <CustomDateField
                                 control={form.control}
-                                name="enddate"
+                                name="project.enddate"
                                 label="End Date"
                             />
                         </div>
                         <CustomComboboxField 
                             control={form.control}
-                            name="employee_id"
+                            name="employees"
                             label="Project Manager"
+                            placeholder="Select the Project Managers"
                             form={form}
+                            url="http://127.0.0.1:8000/employee"
                         />
                         <Button type="submit" className="w-[100%]">Submit</Button>
                     </form>
