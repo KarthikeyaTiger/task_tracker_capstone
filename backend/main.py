@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Depends,status,HTTPException,Query
+from fastapi import FastAPI,Depends,status,HTTPException,Query, Request
 from pydantic import BaseModel
 from typing import Annotated
 import models
@@ -8,10 +8,20 @@ from datetime import date
 from typing import Optional,List
 from fastapi.middleware.cors import CORSMiddleware
 import uuid
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 
 app=FastAPI()
 models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+# Replace this with your actual Google Client ID
+GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"
+
+class TokenRequest(BaseModel):
+    token: str
 
 
 origins = [
@@ -392,3 +402,34 @@ async def get_tasks(db:db_dependency):
     return emp_task
 
 #________________________________________________________________________________________________
+
+@app.post("/api/auth/google")
+async def verify_google_token(request: TokenRequest):
+    try:
+        # Verify the token with Google's OAuth2 service
+        id_info = id_token.verify_oauth2_token(
+            request.token,
+            requests.Request(),
+            '695958764159-rbdkroesu7t6s5jf5935cd77ausfmadt.apps.googleusercontent.com'
+        )
+
+        # Extract user information
+        user_id = id_info.get("sub")
+        email = id_info.get("email")
+        name = id_info.get("name")
+        picture = id_info.get("picture")
+
+        # Return user data
+        return {
+            "success": True,
+            "user": {
+                "id": user_id,
+                "email": email,
+                "name": name,
+                "picture": picture
+            }
+        }
+
+    except ValueError as e:
+        # Handle invalid token errors
+        raise HTTPException(status_code=401, detail="Invalid token") from e
