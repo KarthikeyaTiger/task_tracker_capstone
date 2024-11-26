@@ -8,20 +8,13 @@ from datetime import date
 from typing import Optional,List
 from fastapi.middleware.cors import CORSMiddleware
 import uuid
-from google.oauth2 import id_token
-from google.auth.transport import requests
+import requests
 
 
 app=FastAPI()
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-# Replace this with your actual Google Client ID
-GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"
-
-class TokenRequest(BaseModel):
-    token: str
 
 
 origins = [
@@ -35,6 +28,13 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allows all headers
 )
+
+class EmployeeDetailsCreate(BaseModel):
+    employee_id: str
+    name: str
+    email_id: str
+    picture: str
+    role: str
 
 class ProjectDetailsCreate(BaseModel):
     title: str
@@ -58,7 +58,7 @@ class ProjectUpdate(BaseModel):
 
 class UpdateProject(BaseModel):
     project: ProjectUpdate
-    employee_id: Optional[List[str]] = None
+    employees: Optional[List[str]] = None
 
 class TaskDetailsCreate(BaseModel):
     project_id: str
@@ -83,7 +83,7 @@ class TaskUpdate(BaseModel):
 
 class UpdateTask(BaseModel):
     task: TaskUpdate
-    employee_id: List[str]
+    employees: Optional[List[str]] = None
 
 {
 # class TaskDetailsResponse(BaseModel):
@@ -101,6 +101,9 @@ class EmployeeProjectDetails(BaseModel):
     employee_id: str
     role: str
 
+class GoogleLoginRequest(BaseModel):
+    token: str
+
 def get_db():
     db = SessionLocal()
     try:
@@ -114,12 +117,6 @@ db_dependency = Annotated[Session,Depends(get_db)]
 
 @app.post("/project",status_code=status.HTTP_201_CREATED)
 async def create_project(project_details:CreateProject,db:db_dependency):
-    # db_project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == project.project_id).first()
-    # db_employee = db.query(models.EmployeeDetails).filter(models.EmployeeDetails.id == project.employee_id).first()
-    # if not db_employee:
-    #     raise HTTPException(status_code=404, detail="Employee not found")
-    # if db_project:
-    #     raise HTTPException(status_code=404,detail="project id not unique")
     project = project_details.project
     project_id = str(uuid.uuid4())
     db_project=models.ProjectDetails(project_id=project_id,**project.model_dump())
@@ -127,29 +124,12 @@ async def create_project(project_details:CreateProject,db:db_dependency):
     db.commit()
     for employee in project_details.employees:
         print(employee)
-        db_employeeproject =  models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
+        db_employeeproject =  models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee,role="manager")
         db.add(db_employeeproject)
         db.commit()
     print("end")
 
 
-{
-# @app.get('/project/{project_id}',status_code=status.HTTP_200_OK)
-# async def projectid(project_id:int,db:db_dependency):
-#     print(project_id)
-#     project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == project_id).first()
-#     if project is None:
-#         return HTTPException(status_code=404, detail='Project Not found')
-#     return project
-
-# @app.get('/project',status_code=status.HTTP_200_OK)
-# async def all_project(db:db_dependency):
-#     project = db.query(models.ProjectDetails).all()
-#     if project is None:
-#         return HTTPException(status_code=404, detail="No project's found")
-#     return project
-
-}
 
 @app.get('/project/{id}', status_code=status.HTTP_200_OK)
 async def projectid(db:db_dependency,id:str):
@@ -220,8 +200,8 @@ async def update_project(project_id: str, project_update: UpdateProject, db: db_
         db.delete(pro)
         db.commit()
 
-    if project_update.employee_id:   
-        for employee in project_update.employee_id:
+    if project_update.employees:   
+        for employee in project_update.employees:
             db_projectemployee=models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
             db.add(db_projectemployee)
             db.commit()
@@ -237,17 +217,10 @@ async def update_project(project_id: str, project_update: UpdateProject, db: db_
 
 @app.post('/task',status_code=status.HTTP_201_CREATED)
 async def create_task(task_details:Createtask,db:db_dependency):
-    # db_employee = db.query(models.EmployeeDetails).filter(models.EmployeeDetails.id == task.employee_id).first()
     db_project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == task_details.task.project_id).first()
-    # db_task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task.task_id).first()
     if not db_project:
         raise HTTPException(status_code=404, detail="project not found")
-    
-    # if not db_employee:
-    #     raise HTTPException(status_code=404,detail="employee not found")
-    
-    # if db_task:
-    #     raise HTTPException(status_code=404,detail="Task_id not unique")
+
     task=task_details.task
     task_id=str(uuid.uuid4())
     db_task=models.TaskDetails(task_id=task_id,**task.model_dump())
@@ -259,24 +232,12 @@ async def create_task(task_details:Createtask,db:db_dependency):
         db_employeetask = models.EmployeeTasksDetails(task_id=task_id,employee_id=employee)
         db.add(db_employeetask)
         db.commit()
-
-
-
-{
-# @app.get('/task/{task_id}',status_code=status.HTTP_200_OK)
-# async def taskid(task_id:int,db:db_dependency):
-#     task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
-#     if task is None:
-#         return HTTPException(status_code=404, detail='task Not found')
-#     return task
-
-# @app.get('/task',status_code=status.HTTP_200_OK)
-# async def all_task(db:db_dependency):
-#     task = db.query(models.TaskDetails).all()
-#     if task is None:
-#         return HTTPException(status_code=404, detail="No tasks's Not found")
-#     return task
-}
+    
+    for employee in task_details.employees:
+        print(employee)
+        db_employeeproject = models.EmployeeProjectsDetails(project_id=task.project_id,employee_id=employee,role="employee")
+        db.add(db_employeeproject)
+        db.commit()
 
 
 @app.get('/task/{id}', status_code=status.HTTP_200_OK)
@@ -291,14 +252,20 @@ async def all_task(db:db_dependency,id:str):
 async def get_task(db: db_dependency,project_id: Optional[str] = Query(None), employee_id: Optional[str] = Query(None)):
     tasks=[]
     if project_id and employee_id:
-        projects=db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.employee_id == employee_id).all()
-        # print(tasks)
-        for project in projects:
-            task = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project.project_id).first()
-            tasks.append(task)
+        all_tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id)
+        tasks_with_employees = all_tasks.join(
+                    models.EmployeeTasksDetails, 
+                    models.TaskDetails.task_id == models.EmployeeTasksDetails.task_id
+                ).all()
+        return tasks_with_employees
     elif project_id:
         print("project_id")
         tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).all()
+    elif employee_id:
+        tasks_emp = db.query(models.EmployeeTasksDetails).filter(models.EmployeeTasksDetails.employee_id == employee_id).all()
+        for task_emp in tasks_emp:
+            task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_emp.task_id).first()
+            tasks.append(task)
     else:
         tasks=db.query(models.TaskDetails).all()
     print("sjvh")
@@ -336,41 +303,15 @@ async def taskid(task_id:str,task_update:UpdateTask,db:db_dependency):
         db.delete(task)
         db.commit()
 
-    for employee in task_update.employee_id:
-        db_projectemployee=models.EmployeeTasksDetails(task_id=task_id,employee_id=employee)
-        db.add(db_projectemployee)
-        db.commit()
+    if task_update.employees:
+        for employee in task_update.employees:
+            db_projectemployee=models.EmployeeTasksDetails(task_id=task_id,employee_id=employee)
+            db.add(db_projectemployee)
+            db.commit()
 
 
 
 
-{
-# @app.get('/employee/tasks/{id}',status_code=status.HTTP_200_OK,response_model=List[TaskDetailsResponse])
-# async def emplyee_tasks(id:int,db:db_dependency):
-#     print("employee_tasks")
-#     db_employee = db.query(models.TaskDetails).filter(models.TaskDetails.employee_id == id).first()
-#     if db_employee is None:
-#         raise HTTPException(status_code=404, detail="Employee does not have any tasks")
-#     # employee_project = db.query(models.TaskDetails).\
-#     #                     filter(models.TaskDetails.employee_id == id).\
-#     #                     group_by(models.TaskDetails.employee_id,models.TaskDetails.project_id).all()
-#     employee_project = db.query(
-#         models.TaskDetails.employee_id,
-#         models.TaskDetails.project_id,
-#         models.TaskDetails.task_id,models.ProjectDetails.title
-#     ).join(
-#         models.ProjectDetails,  # Join the project_details table
-#         models.TaskDetails.project_id == models.ProjectDetails.project_id  # On project_id
-#     ).filter(
-#         models.TaskDetails.employee_id == id
-#     ).all()
-
-#     for emp in employee_project:
-#         print(emp.project_id)
-
-#     return employee_project
-
-}
 
 #_______________________________________________________________________________________________________
 
@@ -404,33 +345,31 @@ async def get_tasks(db:db_dependency):
 
 #________________________________________________________________________________________________
 
-@app.post("/api/auth/google")
-async def verify_google_token(request: TokenRequest):
-    try:
-        # Verify the token with Google's OAuth2 service
-        id_info = id_token.verify_oauth2_token(
-            request.token,
-            requests.Request(),
-            '695958764159-rbdkroesu7t6s5jf5935cd77ausfmadt.apps.googleusercontent.com'
-        )
 
-        # Extract user information
-        user_id = id_info.get("sub")
-        email = id_info.get("email")
-        name = id_info.get("name")
-        picture = id_info.get("picture")
+@app.post("/auth/google")
+async def authenticate_google_user(request: GoogleLoginRequest,db:db_dependency):
+    access_token = request.token
+    url = f"https://www.googleapis.com/oauth2/v3/userinfo?access_token={access_token}"
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-        # Return user data
-        return {
-            "success": True,
-            "user": {
-                "id": user_id,
-                "email": email,
-                "name": name,
-                "picture": picture
-            }
-        }
+    # Parse the user data from the response
+    user_info = response.json()
+    print(user_info)
 
-    except ValueError as e:
-        # Handle invalid token errors
-        raise HTTPException(status_code=401, detail="Invalid token") from e
+    user_data = {
+        "employee_id": user_info["sub"],  # Google user ID
+        "name": user_info.get("name"),
+        "email_id": user_info.get("email"),
+        "picture": user_info.get("picture"),
+        "role":"user"
+    }
+
+    db_employee=models.EmployeeDetails(**user_data)
+    db.add(db_employee)
+    db.commit()
+
+
+    print(user_data)
+    return {"user": user_data}
