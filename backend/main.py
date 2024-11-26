@@ -220,10 +220,11 @@ async def update_project(project_id: str, project_update: UpdateProject, db: db_
         db.delete(pro)
         db.commit()
 
-    for employee in project_update.employee_id:
-        db_projectemployee=models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
-        db.add(db_projectemployee)
-        db.commit()
+    if project_update.employee_id:   
+        for employee in project_update.employee_id:
+            db_projectemployee=models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
+            db.add(db_projectemployee)
+            db.commit()
 
 
 
@@ -297,7 +298,7 @@ async def get_task(db: db_dependency,project_id: Optional[str] = Query(None), em
             tasks.append(task)
     elif project_id:
         print("project_id")
-        tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).first()
+        tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).all()
     else:
         tasks=db.query(models.TaskDetails).all()
     print("sjvh")
