@@ -9,6 +9,8 @@ class EmployeeDetails(Base):
     employee_id = Column(String(36), primary_key=True) 
     name = Column(String(30)) 
     email_id = Column(String(50), unique=True)
+    picture = Column(String(255))
+    role = Column(String(10))
 
     projects = relationship("EmployeeProjectsDetails", back_populates="employee")
     assigned_employee = relationship("EmployeeTasksDetails", back_populates="employees")
@@ -59,6 +61,7 @@ class EmployeeProjectsDetails(Base):
 
     project_id = Column(String(36),ForeignKey('project_details.project_id'),primary_key=True)
     employee_id = Column(String(36),ForeignKey('employee_details.employee_id'),primary_key=True)
+    role = Column(String(10))
 
     employee = relationship("EmployeeDetails", back_populates="projects")
     project = relationship("ProjectDetails",back_populates="employeeprojects")
@@ -69,7 +72,6 @@ class EmployeeTasksDetails(Base):
 
     employee_id = Column(String(36),ForeignKey('employee_details.employee_id'),primary_key=True)
     task_id = Column(String(36),ForeignKey('task_details.task_id'),primary_key=True)
-    role = Column(String(10))
 
     task = relationship("TaskDetails",back_populates="assigned_tasks")
     employees = relationship("EmployeeDetails",back_populates="assigned_employee")
