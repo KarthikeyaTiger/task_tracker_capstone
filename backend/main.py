@@ -372,4 +372,4 @@ async def authenticate_google_user(request: GoogleLoginRequest,db:db_dependency)
 
 
     print(user_data)
-    return {"user": user_data}
+    return {user_data}
