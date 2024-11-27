@@ -3,10 +3,10 @@ import React from 'react'
 
 const LoginPage = () => {
   return (
-    <div>
+    <div className="flex h-screen w-full items-center justify-center px-4">
       <Login />
     </div>
   )
 }
 
-export default LoginPage
+export default LoginPage;

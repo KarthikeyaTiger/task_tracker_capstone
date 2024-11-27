@@ -226,6 +226,7 @@ async def create_task(task_details:Createtask,db:db_dependency):
     db_task=models.TaskDetails(task_id=task_id,**task.model_dump())
     db.add(db_task)
     db.commit()
+    id_project=task_details.task.project_id
 
     for employee in task_details.employees:
         print(employee)
@@ -235,9 +236,14 @@ async def create_task(task_details:Createtask,db:db_dependency):
     
     for employee in task_details.employees:
         print(employee)
-        db_employeeproject = models.EmployeeProjectsDetails(project_id=task.project_id,employee_id=employee,role="employee")
-        db.add(db_employeeproject)
-        db.commit()
+        db_emp_project = db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.employee_id == employee).filter(models.EmployeeProjectsDetails.project_id == id_project).first()
+        print(db_emp_project)
+        if db_emp_project:
+            print("Alreay exists")
+        else:
+            db_employeeproject = models.EmployeeProjectsDetails(project_id=task.project_id,employee_id=employee,role="employee")
+            db.add(db_employeeproject)
+            db.commit()
 
 
 @app.get('/task/{id}', status_code=status.HTTP_200_OK)
@@ -334,12 +340,27 @@ async def get_employee(employee_id: int, db: db_dependency):
 
 
 @app.get("/projects",status_code=status.HTTP_200_OK)
-async def get_projects(db:db_dependency):
+async def get_projects(db:db_dependency, project_id: Optional[str] = Query(None)):
+    if project_id:
+        result = db.query(models.EmployeeProjectsDetails.employee_id).filter(
+            models.EmployeeProjectsDetails.project_id == project_id,
+            models.EmployeeProjectsDetails.role == "manager"
+        ).distinct().all()
+        print(result)
+
+        return [emp.employee_id for emp in result]
     emp_pro = db.query(models.EmployeeProjectsDetails).all()
     return emp_pro
 
 @app.get("/tasks",status_code=status.HTTP_200_OK)
-async def get_tasks(db:db_dependency):
+async def get_tasks(db:db_dependency, task_id: Optional[str] = Query(None)):
+    if task_id:
+        result = db.query(models.EmployeeTasksDetails.employee_id).filter(
+            models.EmployeeTasksDetails.task_id == task_id
+        ).distinct().all()
+
+        return [emp.employee_id for emp in result]
+
     emp_task = db.query(models.EmployeeTasksDetails).all()
     return emp_task
 
@@ -366,10 +387,13 @@ async def authenticate_google_user(request: GoogleLoginRequest,db:db_dependency)
         "role":"user"
     }
 
-    db_employee=models.EmployeeDetails(**user_data)
-    db.add(db_employee)
-    db.commit()
+    existing_employee = db.query(models.EmployeeDetails).filter_by(employee_id=user_data["employee_id"]).first()
 
+    if existing_employee:
+        pass
+    else:
+        db_employee = models.EmployeeDetails(**user_data)
+        db.add(db_employee)
+        db.commit()
 
-    print(user_data)
-    return {user_data}
+    return user_data

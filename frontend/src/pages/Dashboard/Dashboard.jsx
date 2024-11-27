@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
+import { useGlobalContext } from '../../context/GlobalContext';
 import fetchData from '@/hooks/fetchData';
 
 // Custom Components
@@ -14,9 +15,13 @@ import {
     CarouselItem,
     CarouselNext,
     CarouselPrevious,
-} from "@/components/ui/carousel"
+} from "@/components/ui/carousel";
+import Navbar from '@/components/custom/Navbar';
 
 const Dashboard = () => {
+    const { isAuthenticated, user } = useGlobalContext();
+    const userData = JSON.parse(user)
+
     const [projectData, setProjectData] = useState(null);
     const [projectLoading, setProjectLoading] = useState(true);
     const [projectError, setProjectError] = useState(null);
@@ -27,7 +32,7 @@ const Dashboard = () => {
 
     const fetchProjectData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/project`);
+            const data = await fetchData(`http://127.0.0.1:8000/project?employee_id=${userData.employee_id}`);
             if (data) {
                 setProjectData(data);
             }
@@ -39,7 +44,7 @@ const Dashboard = () => {
 
     const fetchTaskData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/task`);
+            const data = await fetchData(`http://127.0.0.1:8000/task?employee_id=${userData.employee_id}`);
             if (data) {
                 setTaskData(data);
             }
@@ -64,45 +69,53 @@ const Dashboard = () => {
     }, [projectData, taskData])
     
     return(
-        <div className="mx-auto max-w-[900px] px-6">
-            <div className="flex justify-between space-x-3 align-center">
-                <p className='text-3xl font-bold my-10'>Dashboard</p>
-                <AddProject handleSubmit={fetchProjectData} />
-            </div>
-            {taskLoading ?
-            <p className='text-center'> Hang on while we load your tasks... </p> : 
-            (
-                taskError ? 
-                <div className='text-center'>
-                    {taskError.response.data.detail}
+        isAuthenticated
+        ? (
+        <>
+            <Navbar />
+            <div className="mx-auto max-w-[1000px] px-6 my-8">
+                <div className="flex justify-between space-x-3 align-center">
+                    <p className='text-3xl font-bold mb-10'>Dashboard</p>
+                    <AddProject handleSubmit={fetchProjectData} />
                 </div>
-                :
-                <TaskTable data={taskData} handleSubmit={fetchTaskData} />
-            )
-            }
-            {
-                projectLoading ? 
-                <p className='text-center'>Loading the projects you are cooking...</p> :
-                projectError ? <>{projectError.status + projectError.statustext}</>:
-                projectData && projectData.length > 0 ? ( 
-                    <div>
-                        <Carousel>
-                            <CarouselContent>
-                                {projectData.map((project, index) => (
-                                    <CarouselItem key={index} className="md:basis-1/2">
-                                        <Link to={`/project/${project.project_id}`}>
-                                            <Projects project={project} />
-                                        </Link>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious className="-left-4" />
-                            <CarouselNext className="-right-4" />
-                        </Carousel>
+                {taskLoading ?
+                <p className='text-center'> Hang on while we load your tasks... </p> : 
+                (
+                    taskError ? 
+                    <div className='text-center'>
+                        {taskError.response.data.detail}
                     </div>
-                ) : <>No Projects found...</>
-            }
-        </div>
+                    :
+                    <TaskTable data={taskData} handleSubmit={fetchTaskData} />
+                )
+                }
+                {
+                    projectLoading
+                    ? <p className='text-center'>Loading the projects you are cooking...</p>
+                    : projectError ? <>{projectError.status + projectError.statustext}</>
+                    : projectData && projectData.length > 0 
+                    ? ( 
+                        <div>
+                            <Carousel>
+                                <CarouselContent>
+                                    {projectData.map((project, index) => (
+                                        <CarouselItem key={index} className="md:basis-1/2">
+                                            <Link to={`/project/${project.project_id}`}>
+                                                <Projects project={project} />
+                                            </Link>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="-left-4" />
+                                <CarouselNext className="-right-4" />
+                            </Carousel>
+                        </div>
+                    )
+                    : <p>No Projects found...</p>
+                }
+            </div>
+        </>)
+        : <Navigate to="/login"/>
     )
 }
 

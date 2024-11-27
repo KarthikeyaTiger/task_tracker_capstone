@@ -30,7 +30,6 @@ import DeleteProject from './DeleteTask';
 const TaskTable = ( { data, handleSubmit } ) => {
     const [taskData, setTaskData] = useState([])
     
-    console.log(data)
     useEffect(() => {
         if (data) {
             setTaskData(data);
@@ -39,7 +38,9 @@ const TaskTable = ( { data, handleSubmit } ) => {
 
     const changeStatus = (value, task) => {
         let data = JSON.stringify({
-            "task_status": value
+            "task": {
+                "task_status": value
+            }
         });
 
         let config = {
@@ -109,13 +110,15 @@ const TaskTable = ( { data, handleSubmit } ) => {
                                     <DropdownMenuContent className="flex flex-col justify-start space-y-1">
                                         <EditTask
                                             defaultValues={{
-                                                title: task.title,
-                                                description: task.description,
-                                                startdate: new Date(task.startdate),
-                                                enddate: new Date(task.enddate),
-                                                task_status: task.task_status,
-                                                employee_id: task.employee_id,
-                                                project_id: task.project_id,
+                                                task: {
+                                                    title: task.title,
+                                                    description: task.description,
+                                                    startdate: new Date(task.startdate),
+                                                    enddate: new Date(task.enddate),
+                                                    task_status: task.task_status,
+                                                    project_id: task.project_id,
+                                                },
+                                                employees: [],
                                             }}
                                             handleSubmit = {handleSubmit}
                                             task_id = {task.task_id}
