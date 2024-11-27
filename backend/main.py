@@ -193,7 +193,7 @@ async def create_task(task_details:schemas.Createtask,db:db_dependency, user: di
 
 
 @app.get('/task/{id}', status_code=status.HTTP_200_OK)
-async def all_task(db:db_dependency,id:str):
+async def all_task(db:db_dependency,id:str, user: dict = Depends(verify_google_token)):
     task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == id).first()
     if task is None:
         return HTTPException(status_code=404, detail="No tasks's Not found")
@@ -201,7 +201,7 @@ async def all_task(db:db_dependency,id:str):
 
 
 @app.get('/task', status_code=status.HTTP_200_OK)
-async def get_task(db: db_dependency,project_id: Optional[str] = Query(None), employee_id: Optional[str] = Query(None)):
+async def get_task(db: db_dependency,project_id: Optional[str] = Query(None), employee_id: Optional[str] = Query(None), user: dict = Depends(verify_google_token)):
     tasks=[]
 
     if project_id and employee_id:
@@ -356,7 +356,7 @@ async def authenticate_google_user(request: schemas.GoogleLoginRequest,db:db_dep
     existing_employee = db.query(models.EmployeeDetails).filter(models.EmployeeDetails.employee_id==user_data["employee_id"]).first()
 
     if existing_employee:
-        pass
+        return existing_employee
     else:
         db_employee = models.EmployeeDetails(**user_data)
         db.add(db_employee)
