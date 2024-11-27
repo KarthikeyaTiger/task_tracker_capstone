@@ -66,7 +66,6 @@ async def create_project(project_details:schemas.CreateProject,db:db_dependency,
         db_employeeproject =  models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee,role="manager")
         db.add(db_employeeproject)
         db.commit()
-    print("end")
 
 
 @app.get('/project/{id}', status_code=status.HTTP_200_OK)
@@ -139,15 +138,16 @@ async def update_project(project_id: str, project_update: schemas.UpdateProject,
     
     db.commit() 
 
-    projectemployee = db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).all()
-    
-    for pro in projectemployee:
-        db.delete(pro)
-        db.commit()
-
+       
     if project_update.employees:   
+        projectemployee = db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).all()
+        
+        for pro in projectemployee:
+            db.delete(pro)
+            db.commit()
+
         for employee in project_update.employees:
-            db_projectemployee=models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee)
+            db_projectemployee=models.EmployeeProjectsDetails(project_id=project_id,employee_id=employee,role="manager")
             db.add(db_projectemployee)
             db.commit()
 
@@ -267,13 +267,11 @@ async def taskid(task_id:str,task_update:schemas.UpdateTask,db:db_dependency,use
             setattr(task, key, value) 
         db.commit()
 
-        taskemployee = db.query(models.EmployeeTasksDetails).filter(models.EmployeeTasksDetails.task_id == task_id).all()
-        
-        for task in taskemployee:
-            db.delete(task)
-            db.commit()
-
         if task_update.employees:
+            taskemployee = db.query(models.EmployeeTasksDetails).filter(models.EmployeeTasksDetails.task_id == task_id).all()
+            for task in taskemployee:
+                db.delete(task)
+                db.commit()
             for employee in task_update.employees:
                 db_projectemployee=models.EmployeeTasksDetails(task_id=task_id,employee_id=employee)
                 db.add(db_projectemployee)
