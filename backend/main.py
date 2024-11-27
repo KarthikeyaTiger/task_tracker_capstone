@@ -237,6 +237,7 @@ async def delete_task(task_id:str,db:db_dependency,user: dict = Depends(verify_g
     project_id = db.query(models.TaskDetails.project_id).filter(models.TaskDetails.task_id == task_id).first()
 
     manager_ids = await get_projects(db,project_id[0])
+    manager_ids = list(manager_ids[0])
 
     if user.get('sub') in manager_ids or user["role"] == "Admin":
         task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
@@ -258,7 +259,7 @@ async def taskid(task_id:str,task_update:schemas.UpdateTask,db:db_dependency,use
     project_id = db.query(models.TaskDetails.project_id).filter(models.TaskDetails.task_id == task_id).first()
 
     manager_ids = await get_projects(db,project_id[0])
-
+    manager_ids = list(manager_ids[0])
     if user.get('sub') in manager_ids or user["role"] == "Admin":
         task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
         if task is None:
