@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import axios from "axios";
 import { useParams } from 'react-router-dom';
+import { useGlobalContext } from '../../context/GlobalContext';
 
 // custom components
 import TaskTable from '@/components/custom/TaskTable'
@@ -15,7 +15,6 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Icons
@@ -26,6 +25,7 @@ import AddTask from '@/components/custom/AddTask';
 
 const ProjectPage = () => {
     const { projectId } = useParams();
+    const { token } = useGlobalContext();
 
     const [projectData, setProjectData] = useState(null);
     const [projectLoading, setProjectLoading] = useState(true);
@@ -37,7 +37,7 @@ const ProjectPage = () => {
 
     const fetchProjectData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/project/${projectId}`);
+            const data = await fetchData(`http://127.0.0.1:8000/project/${projectId}`, token);
             if (data) {
                 setProjectData(data);
             }
@@ -49,7 +49,7 @@ const ProjectPage = () => {
 
     const fetchTaskData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/task?project_id=${projectId}`);
+            const data = await fetchData(`http://127.0.0.1:8000/task?project_id=${projectId}`, token);
             if (data) {
                 setTaskData(data);
             }

@@ -19,7 +19,7 @@ import {
 import Navbar from '@/components/custom/Navbar';
 
 const Dashboard = () => {
-    const { isAuthenticated, user } = useGlobalContext();
+    const { isAuthenticated, user, token } = useGlobalContext();
     const userData = JSON.parse(user)
 
     const [projectData, setProjectData] = useState(null);
@@ -32,7 +32,7 @@ const Dashboard = () => {
 
     const fetchProjectData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/project?employee_id=${userData.employee_id}`);
+            const data = await fetchData(`http://127.0.0.1:8000/project?employee_id=${userData.employee_id}`, token);
             if (data) {
                 setProjectData(data);
             }
@@ -44,7 +44,7 @@ const Dashboard = () => {
 
     const fetchTaskData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/task?employee_id=${userData.employee_id}`);
+            const data = await fetchData(`http://127.0.0.1:8000/task?employee_id=${userData.employee_id}`, token);
             if (data) {
                 setTaskData(data);
             }

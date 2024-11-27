@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { useGlobalContext } from '../../context/GlobalContext'
 
 // shadcn ui components
 import { Button } from "@/components/ui/button"
@@ -13,14 +14,17 @@ import {
     DialogClose
 } from "@/components/ui/dialog"
 
-const DeleteProject = ({ handleSubmit, task_id }) => {
+const DeleteTask = ({ handleSubmit, task_id }) => {
+    const { token } = useGlobalContext()
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const handleDelete = () => {
         let config = {
             method: 'delete',
             maxBodyLength: Infinity,
             url: `http://127.0.0.1:8000/task/${task_id}`,
-            headers: { }
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         };
 
         axios.request(config)
@@ -58,4 +62,4 @@ const DeleteProject = ({ handleSubmit, task_id }) => {
   )
 }
 
-export default DeleteProject
+export default DeleteTask

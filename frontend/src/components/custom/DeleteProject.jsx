@@ -1,5 +1,6 @@
 import React from 'react'
 import axios from 'axios'
+import { useGlobalContext } from '../../context/GlobalContext'
 
 // shadcn ui components
 import { Button } from "@/components/ui/button"
@@ -19,13 +20,16 @@ import { useNavigate } from 'react-router-dom'
   
 
 const DeleteProject = ({ project_id }) => {
+    const { token } = useGlobalContext();
     const navigate = useNavigate();
     const handleDelete = () => {
         let config = {
             method: 'delete',
             maxBodyLength: Infinity,
             url: `http://127.0.0.1:8000/project/${project_id}`,
-            headers: { }
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         };
 
         axios.request(config)

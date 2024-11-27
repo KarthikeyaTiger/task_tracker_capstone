@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { useGlobalContext } from '@/context/GlobalContext'
 
 // custom components
 import CustomTextField from "@/components/common/CustomTextField"
@@ -17,9 +18,6 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
-
-// Icons
-import { Plus } from 'lucide-react'
 
 // form related imports
 import { z } from "zod"
@@ -45,6 +43,7 @@ const formSchema = z.object({
   
 
 const EditTask = ({ handleSubmit, defaultValues, task_id }) => {
+    const { token } = useGlobalContext()
     const [isFromOpen, setIsFormOpen] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -52,20 +51,23 @@ const EditTask = ({ handleSubmit, defaultValues, task_id }) => {
     })
 
     const onSubmit = (data) => {
-        const formattedStartDate = data.task.startdate.toISOString().split('T')[0];
-        const formattedEndDate = data.task.enddate.toISOString().split('T')[0];
+        const formattedStartDate = new Date(data.task.startdate).toLocaleDateString('en-CA');
+        const formattedEndDate = new Date(data.task.enddate).toLocaleDateString('en-CA');
 
         let config = {
             method: 'put',
             maxBodyLength: Infinity,
             url: `http://127.0.0.1:8000/task/${task_id}`,
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             data : {
                 ...data,
-                startdate: formattedStartDate,
-                enddate: formattedEndDate,
+                task: {
+                    startdate: formattedStartDate,
+                    enddate: formattedEndDate,
+                }
             }
         };
 
@@ -123,6 +125,7 @@ const EditTask = ({ handleSubmit, defaultValues, task_id }) => {
                             form={form}
                             placeholder="Select the Task Assignees"
                             url="http://127.0.0.1:8000/employee"
+                            selected = {`http://127.0.0.1:8000/tasks?task_id=${task_id}`}
                         />
                         <Button type="submit" className="w-[100%]">Submit</Button>
                     </form>

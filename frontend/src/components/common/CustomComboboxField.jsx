@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { useGlobalContext } from "../../context/GlobalContext";
 import fetchData from '@/hooks/fetchData'
 
 // Icons
@@ -30,7 +30,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const CustomComboboxField = ( { name, control, label, form, placeholder, url } ) => {
+const CustomComboboxField = ( { name, control, label, form, placeholder, url, selected } ) => {
+    const { token } = useGlobalContext();
     const [data, setData] = useState([]);
     const [dataLoading, setDataLoading] = useState([]);
     const [dataError, setDataError] = useState([]);
@@ -38,7 +39,7 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url } )
 
     const fetchDataItems = async () => {
         try {
-            const itemData = await fetchData(url);
+            const itemData = await fetchData(url, token);
             if (itemData) {
                 setData(itemData);
             }
@@ -47,9 +48,21 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url } )
             console.error("Error fetching project data:", error);
         }
     }
+    
+    const fetchSelectedData = async () => {
+        try {
+            const selectedData = await fetchData(selected, token);
+            if (selectedData) {
+                setSelectedItems(selectedData);
+            }
+        } catch (error) {
+            console.error("Error fetching selected members:", error);
+        }
+    }
 
     useEffect(() => {
         fetchDataItems();
+        fetchSelectedData();
     }, [])
 
     useEffect(() => {
@@ -59,6 +72,7 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url } )
     }, [data])
 
     useEffect(() => {
+        console.log(selectedItems)
         form.setValue(name, selectedItems);
     }, [selectedItems])
     
@@ -95,7 +109,7 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url } )
                                 <CommandGroup>
                                     {data.map((datum) => (
                                         <CommandItem
-                                            value={datum.name}
+                                            value={datum.email_id}
                                             key={datum.employee_id}
                                             onSelect={() => {
                                                 if (!selectedItems.includes(datum.employee_id)) {

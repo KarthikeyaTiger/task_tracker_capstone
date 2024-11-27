@@ -9,7 +9,7 @@ const ErrorPage = () => {
             <p className="text-xl text-red-900 font-medium mb-5">Error 404</p>
             <p className="text-6xl font-bold mb-10">there is <br />light in here too.</p>
             <p className="text-lg text-red-900 font-medium mb-10">But the page is missing or you assembled the link incorrectly.</p>
-            <Link className='flex underline text-md pb-2 w-[100%]' to="/asdchbsdjbvcjhsdbvj">Go home</Link>
+            <Link className='flex underline text-md pb-2 w-[100%]' to="/">Go home</Link>
         </div>
     </div>
   )

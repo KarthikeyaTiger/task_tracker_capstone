@@ -1,11 +1,12 @@
 import axios from 'axios';
-
-const fetchData = async (url) => {
+const fetchData = async ( url, token ) => {
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: url,
-        headers: { }
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
     };
 
     try {

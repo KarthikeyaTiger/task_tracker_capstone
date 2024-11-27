@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { useGlobalContext } from '../../context/GlobalContext'
 
 // custom components
 import CustomTextField from "@/components/common/CustomTextField"
@@ -41,6 +42,7 @@ const formSchema = z.object({
   
 
 const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
+    const { token } = useGlobalContext();
     const [isFromOpen, setIsFormOpen] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -57,7 +59,8 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
             maxBodyLength: Infinity,
             url: `http://127.0.0.1:8000/project/${project_id}`,
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             data : {
                 ...data,
@@ -125,6 +128,7 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
                             placeholder="Select the Project Managers"
                             form={form}
                             url="http://127.0.0.1:8000/employee"
+                            selected = {`http://127.0.0.1:8000/projects?project_id=${project_id}`}
                         />
                         <Button type="submit" className="w-[100%]">Submit</Button>
                     </form>

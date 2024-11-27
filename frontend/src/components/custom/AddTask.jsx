@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { useGlobalContext } from '../../context/GlobalContext'
 
 // custom components
 import CustomTextField from "@/components/common/CustomTextField"
@@ -45,6 +46,7 @@ const formSchema = z.object({
   
 
 const AddTask = ({ handleSubmit, project_id }) => {
+    const { token } = useGlobalContext();
     const [isFromOpen, setIsFormOpen] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -68,7 +70,8 @@ const AddTask = ({ handleSubmit, project_id }) => {
             maxBodyLength: Infinity,
             url: 'http://127.0.0.1:8000/task',
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             data : {
                 ...data,

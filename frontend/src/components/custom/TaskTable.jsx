@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import axios from "axios";
+import { useGlobalContext } from '../../context/GlobalContext';
 
+// shadcn ui components
 import {
     Table,
     TableBody,
@@ -19,15 +21,19 @@ import {
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
+// Icons
 import { Ellipsis } from 'lucide-react'
-import EditTask from './EditTask';
-import DeleteProject from './DeleteTask';
+
+// Custom components
+import EditTask from '@/components/custom/EditTask';
+import DeleteTask from '@/components/custom/DeleteTask';
   
 
 const TaskTable = ( { data, handleSubmit } ) => {
+    const { token } = useGlobalContext();
     const [taskData, setTaskData] = useState([])
     
     useEffect(() => {
@@ -48,7 +54,8 @@ const TaskTable = ( { data, handleSubmit } ) => {
             maxBodyLength: Infinity,
             url: `http://127.0.0.1:8000/task/${task.task_id}`,
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             data : data
         };
@@ -124,7 +131,7 @@ const TaskTable = ( { data, handleSubmit } ) => {
                                             task_id = {task.task_id}
                                             asChild
                                         />
-                                        <DeleteProject
+                                        <DeleteTask
                                             handleSubmit={handleSubmit}
                                             task_id={task.task_id}
                                         />
