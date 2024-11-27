@@ -159,8 +159,8 @@ async def update_project(project_id: str, project_update: schemas.UpdateProject,
 async def create_task(task_details:schemas.Createtask,db:db_dependency, user: dict = Depends(verify_google_token)):
 
     manager_ids = await get_projects(db,task_details.task.project_id)
-
-    if user.get('sub') in manager_ids and user["role"] == "Admin":
+    manager_ids = list(manager_ids[0])
+    if user.get('sub') in manager_ids or user["role"] == "Admin":
         db_project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == task_details.task.project_id).first()
         if not db_project:
             raise HTTPException(status_code=404, detail="project not found")
@@ -238,7 +238,7 @@ async def delete_task(task_id:str,db:db_dependency,user: dict = Depends(verify_g
 
     manager_ids = await get_projects(db,project_id[0])
 
-    if user.get('sub') in manager_ids and user["role"] == "Admin":
+    if user.get('sub') in manager_ids or user["role"] == "Admin":
         task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
         task_employee = db.query(models.EmployeeTasksDetails).filter(models.EmployeeTasksDetails.task_id == task_id).all()
         if task is None:
@@ -259,7 +259,7 @@ async def taskid(task_id:str,task_update:schemas.UpdateTask,db:db_dependency,use
 
     manager_ids = await get_projects(db,project_id[0])
 
-    if user.get('sub') in manager_ids and user["role"] == "Admin":
+    if user.get('sub') in manager_ids or user["role"] == "Admin":
         task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == task_id).first()
         if task is None:
             return HTTPException(status_code=404, detail='task Not found')
