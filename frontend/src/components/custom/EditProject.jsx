@@ -24,6 +24,9 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
+// Icons
+import { SquarePen } from 'lucide-react'
+
 // Form Schema
 const formSchema = z.object({
     project: z.object({
@@ -43,14 +46,16 @@ const formSchema = z.object({
 
 const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
     const { token } = useGlobalContext();
+
     const [isFromOpen, setIsFormOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: defaultValues,
     })
 
     const onSubmit = (data) => {
-        console.log("hi")
         const formattedStartDate = data.project.startdate.toISOString().split('T')[0];
         const formattedEndDate = data.project.enddate.toISOString().split('T')[0];
 
@@ -85,7 +90,7 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
     return (
         <Dialog className="mx-10" open={isFromOpen} onOpenChange={setIsFormOpen}>
             <Button className="my-auto" variant="outline" asChild>
-                <DialogTrigger>Edit</DialogTrigger>
+                <DialogTrigger><SquarePen /></DialogTrigger>
             </Button>
             <DialogContent>
                 <DialogHeader>
@@ -122,10 +127,10 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
                             />
                         </div>
                         <CustomComboboxField 
-                            control={form.control}
                             name="employees"
                             label="Project Manager"
                             placeholder="Select the Project Managers"
+                            control={form.control}
                             form={form}
                             url="http://127.0.0.1:8000/employee"
                             selected = {`http://127.0.0.1:8000/projects?project_id=${project_id}`}
@@ -134,6 +139,7 @@ const EditProject = ({ defaultValues, project_id, handleSubmit }) => {
                     </form>
                 </Form>
             </DialogContent>
+            
         </Dialog>
     )
 }

@@ -9,13 +9,7 @@ const fetchData = async ( url, token ) => {
         }
     };
 
-    try {
-        const response = await axios.request(config);
-        return response.data;
-    } catch(error) {
-        console.log(error);
-        throw new Error (error);
-    }
+    return await axios.request(config);
 };  
 
 export default fetchData;

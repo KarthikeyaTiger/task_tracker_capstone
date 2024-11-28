@@ -62,14 +62,6 @@ const AddProject = ({ handleSubmit }) => {
     const onSubmit = (data) => {
         const formattedStartDate = data.project.startdate.toISOString().split('T')[0];
         const formattedEndDate = data.project.enddate.toISOString().split('T')[0];
-        console.log({
-            ...data,
-            project: {
-                ...data.project,
-                startdate: formattedStartDate,
-                enddate: formattedEndDate,
-            }
-        })
 
         let config = {
             method: 'post',
@@ -101,7 +93,7 @@ const AddProject = ({ handleSubmit }) => {
 
     return (
         <Dialog className="mx-10" open={isFromOpen} onOpenChange={setIsFormOpen}>
-            <Button className="my-auto" asChild><DialogTrigger>Add Project</DialogTrigger></Button>
+            <Button className="my-auto bg-green-700 hover:bg-green-800" asChild><DialogTrigger>Add Project</DialogTrigger></Button>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Project Details</DialogTitle>

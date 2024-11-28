@@ -21,7 +21,7 @@ const Navbar = () => {
 
   return (
     isAuthenticated ? (
-      <div className="py-4 px-6 sm:px-16 flex border-b justify-between">
+      <div className="py-3 px-6 sm:px-16 flex border-b justify-between">
         <Sidebar />
         <Popover>
           <PopoverTrigger>

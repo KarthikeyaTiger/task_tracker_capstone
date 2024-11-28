@@ -95,7 +95,7 @@ const AddTask = ({ handleSubmit, project_id }) => {
 
     return (
         <Dialog className="mx-10" open={isFromOpen} onOpenChange={setIsFormOpen}>
-            <Button className="my-auto p-3 rounded-full" asChild><DialogTrigger><Plus /></DialogTrigger></Button>
+            <Button className="my-auto p-3 rounded-full bg-green-700 hover:bg-green-800" asChild><DialogTrigger><Plus /></DialogTrigger></Button>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Task Details</DialogTitle>
