@@ -4,14 +4,6 @@ import { useGlobalContext } from '../../context/GlobalContext'
 
 // shadcn ui components
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -20,9 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Custom components
 import Logout from '@/components/common/Logout'
-
-// Icons
-import { Menu } from 'lucide-react'
+import Sidebar from '@/components/custom/Sidebar'
 
 const Navbar = () => {
 
@@ -32,18 +22,7 @@ const Navbar = () => {
   return (
     isAuthenticated ? (
       <div className="py-4 px-6 sm:px-16 flex border-b justify-between">
-        <Sheet>
-          <SheetTrigger><Menu /></SheetTrigger>
-          <SheetContent side="left">
-            <SheetHeader>
-              <SheetTitle>Are you absolutely sure?</SheetTitle>
-              <SheetDescription>
-                This action cannot be undone. This will permanently delete your account
-                and remove your data from our servers.
-              </SheetDescription>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
+        <Sidebar />
         <Popover>
           <PopoverTrigger>
             <div className='flex justify-end'>

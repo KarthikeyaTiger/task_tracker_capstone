@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import axios from "axios";
 import { useGlobalContext } from '../../context/GlobalContext';
+
+// HTTP Request related imports
+import axios from "axios";
 
 // shadcn ui components
 import {
@@ -34,7 +36,7 @@ import DeleteTask from '@/components/custom/DeleteTask';
 
 const TaskTable = ( { data, handleSubmit } ) => {
     const { token } = useGlobalContext();
-    const [taskData, setTaskData] = useState([])
+    const [taskData, setTaskData] = useState([]);
     
     useEffect(() => {
         if (data) {
