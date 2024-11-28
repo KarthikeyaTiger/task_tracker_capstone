@@ -59,43 +59,19 @@ def verify_google_token(db: db_dependency, token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=404, detail="Employee not found")
 
     # Add role to user info
-    user_info["role"] = db_role.role
+    user_info["role"] = db_role[0]
 
     return user_info
 
+# Index Endpoint ________________________________________________________________________________________________________
+
+@app.get("/")
+def index():
+    return {
+        "data": "Hello World!"
+    }
+
 # Project Endpoints ________________________________________________________________________________________________________
-
-@app.post("/project", status_code=status.HTTP_201_CREATED)
-async def create_project(project_details: schemas.CreateProject, db: db_dependency, user: dict = Depends(verify_google_token)):
-    # Check admin privileges
-    if user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="You are not authorized to create projects")
-
-    # Create project
-    project_id = str(uuid.uuid4())
-    project = models.ProjectDetails(project_id=project_id, **project_details.project.model_dump())
-    db.add(project)
-
-    # Assign employees to the project
-    employee_projects = [
-        models.EmployeeProjectsDetails(project_id=project_id, employee_id=employee, role="manager")
-        for employee in project_details.employees
-    ]
-    db.add_all(employee_projects)
-
-    # Commit the transaction
-    db.commit()
-
-    return {"message": "Project created successfully", "project_id": project_id}
-
-@app.get('/project/{id}', status_code=status.HTTP_200_OK)
-async def get_project_by_id( id: str, db: db_dependency, user: dict = Depends(verify_google_token) ):
-    # Fetch the project by ID
-    project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    return project
 
 @app.get('/project', status_code=status.HTTP_200_OK)
 async def get_projects( db: db_dependency, employee_id: Optional[str] = Query(None), user: dict = Depends(verify_google_token) ):
@@ -123,30 +99,37 @@ async def get_projects( db: db_dependency, employee_id: Optional[str] = Query(No
 
     return projects
 
-@app.delete('/project/{project_id}',status_code=status.HTTP_200_OK)
-async def delete_project(project_id:str,db:db_dependency,user: dict = Depends(verify_google_token)):
-    # Check admin privileges
-    if user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="You are not authorized to delete projects")
-
-    # Check if the project exists
-    project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == project_id).first()
+@app.get('/project/{id}', status_code=status.HTTP_200_OK)
+async def get_project_by_id( id: str, db: db_dependency, user: dict = Depends(verify_google_token) ):
+    # Fetch the project by ID
+    project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    
+    return project
 
-    # Delete associated tasks
-    tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).all()
-    for task in tasks:
-        await delete_task(task.task_id, db, emp_id=user.get('sub'))  # Assuming `delete_task` is asynchronous
+@app.post("/project", status_code=status.HTTP_201_CREATED)
+async def create_project(project_details: schemas.CreateProject, db: db_dependency, user: dict = Depends(verify_google_token)):
+    # Check admin privileges
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="You are not authorized to create projects")
 
-    # Delete employee-project associations in bulk
-    db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).delete()
+    # Create project
+    project_id = str(uuid.uuid4())
+    project = models.ProjectDetails(project_id=project_id, **project_details.project.model_dump())
+    db.add(project)
 
-    # Delete the project
-    db.delete(project)
+    # Assign employees to the project
+    employee_projects = [
+        models.EmployeeProjectsDetails(project_id=project_id, employee_id=employee, role="manager")
+        for employee in project_details.employees
+    ]
+    db.add_all(employee_projects)
+
+    # Commit the transaction
     db.commit()
 
-    return {"message": "Project deleted successfully"}
+    return {"message": "Project created successfully", "project_id": project_id}
 
 @app.put('/project/{project_id}', status_code=status.HTTP_200_OK)
 async def update_project(project_id: str, project_update: schemas.UpdateProject, db: db_dependency,user: dict = Depends(verify_google_token)):
@@ -183,6 +166,31 @@ async def update_project(project_id: str, project_update: schemas.UpdateProject,
     return {
         "message": "Project updated successfully",
     }
+
+@app.delete('/project/{project_id}',status_code=status.HTTP_200_OK)
+async def delete_project(project_id:str,db:db_dependency,user: dict = Depends(verify_google_token)):
+    # Check admin privileges
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="You are not authorized to delete projects")
+
+    # Check if the project exists
+    project = db.query(models.ProjectDetails).filter(models.ProjectDetails.project_id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Delete associated tasks
+    tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).all()
+    for task in tasks:
+        await delete_task(task.task_id, db, emp_id=user.get('sub'))  # Assuming `delete_task` is asynchronous
+
+    # Delete employee-project associations in bulk
+    db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).delete()
+
+    # Delete the project
+    db.delete(project)
+    db.commit()
+
+    return {"message": "Project deleted successfully"}
 
 
 # Task Endpoints ________________________________________________________________________________________________________
@@ -274,7 +282,7 @@ async def delete_task(task_id:str, db:db_dependency, emp_id=None, user: dict = D
 
     # Check if the user is a manager or admin for the project
     manager_ids = await get_projects(db, project_id)
-    if emp_id not in manager_ids and user["role"] != "Admin":
+    if emp_id not in manager_ids and user["role"] != "admin":
         raise HTTPException(status_code=403, detail="You are not authorized to perform this operation")
 
     # Delete task employees associations
