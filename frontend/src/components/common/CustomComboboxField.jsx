@@ -30,39 +30,48 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const CustomComboboxField = ( { name, control, label, form, placeholder, url, selected } ) => {
+const CustomComboboxField = ( { name, label, placeholder, control, form, url, selected } ) => {
     const { token } = useGlobalContext();
     const [data, setData] = useState([]);
-    const [dataLoading, setDataLoading] = useState([]);
-    const [dataError, setDataError] = useState([]);
+    const [dataLoading, setDataLoading] = useState(true);
+    const [dataError, setDataError] = useState(null);
     const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedItemsLoading, setSelectedItemsLoading] = useState(true);
+    const [selectedItemsError, setSelectedItemsError] = useState(null);
 
     const fetchDataItems = async () => {
         try {
-            const itemData = await fetchData(url, token);
-            if (itemData) {
-                setData(itemData);
+            const response = await fetchData(url, token);
+            if (response.data) {
+                setData(response.data);
             }
         } catch (error) {
-            setDataError(error);
-            console.error("Error fetching project data:", error);
+            setDataError(error.response.data.detail);
+        } finally {
+            setDataLoading(false);
         }
     }
     
     const fetchSelectedData = async () => {
         try {
-            const selectedData = await fetchData(selected, token);
-            if (selectedData) {
-                setSelectedItems(selectedData);
+            const response = await fetchData(selected, token);
+            if (response.data) {
+                setSelectedItems(response.data);
             }
         } catch (error) {
-            console.error("Error fetching selected members:", error);
+            setSelectedItemsError(error.response.data.detail);
+        } finally {
+            setSelectedItemsLoading(false);
         }
     }
 
     useEffect(() => {
         fetchDataItems();
-        fetchSelectedData();
+        if (selected) {
+            fetchSelectedData();
+        } else {
+            setSelectedItemsLoading(false)
+        }
     }, [])
 
     useEffect(() => {
@@ -72,12 +81,15 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url, se
     }, [data])
 
     useEffect(() => {
-        console.log(selectedItems)
         form.setValue(name, selectedItems);
     }, [selectedItems])
     
     return (
-        <>
+        dataLoading
+        ? <>Loading employees...</>
+        : dataError
+        ? <>Error {console.error(dataError)}</>
+        : <>
             <FormField
                 control={control}
                 name={name}
@@ -141,21 +153,39 @@ const CustomComboboxField = ( { name, control, label, form, placeholder, url, se
                 </FormItem>
                 )}
             />
-            {selectedItems.length === 0
+            
+            {
+                selectedItemsLoading
+                ? <>Loading...</>
+                : selectedItemsError
+                ? <>Error</>
+                : selectedItems.length === 0
                 ? <></>
                 : <div>
                     <p className="text-sm font-normal">Selected Employees</p>
-                    {selectedItems.map((item, index)=>(
-                        <Button
-                            className="rounded-full text-xs p-1 px-3 m-1"
-                            key={index} 
-                            variant="outline"
-                            onClick={()=> {setSelectedItems(selectedItems.filter(id => id !== item))}}
-                            asChild
-                        >
-                            <Badge variant="outline">{(data.find(i => i.employee_id === item)).name}<X size={16} /></Badge>
-                        </Button>
-                    ))}
+                    <div className="max-w-[100%]">
+                        {selectedItems.map((item, index) => {
+                            const selectedItem = data.find(i => i.employee_id === item);
+
+                            return selectedItem ? (
+                                <Button
+                                    className="rounded-full text-xs p-2 px-5 m-1"
+                                    key={index}
+                                    variant="outline"
+                                    onClick={() => setSelectedItems(selectedItems.filter(id => id !== item))}
+                                    asChild
+                                >
+                                    <Badge variant="outline" className="space-x-3">
+                                        <div className="text-left">
+                                            <p>{selectedItem.name}</p>
+                                            <p className="text-zinc-700 font-normal">{selectedItem.email_id}</p>
+                                        </div>
+                                        <X size={16} />
+                                    </Badge>
+                                </Button>
+                            ) : null;
+                        })}
+                    </div>
                 </div>
             }
         </>

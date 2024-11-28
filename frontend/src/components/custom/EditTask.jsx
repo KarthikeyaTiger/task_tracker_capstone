@@ -65,6 +65,7 @@ const EditTask = ({ handleSubmit, defaultValues, task_id }) => {
             data : {
                 ...data,
                 task: {
+                    ...data.task,
                     startdate: formattedStartDate,
                     enddate: formattedEndDate,
                 }

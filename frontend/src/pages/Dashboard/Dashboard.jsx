@@ -7,15 +7,6 @@ import fetchData from '@/hooks/fetchData';
 import Projects from "@/components/custom/Projects";
 import TaskTable from "@/components/custom/TaskTable";
 import AddProject from "@/components/custom/AddProject";
-
-// shadcn ui components
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
 import Navbar from '@/components/custom/Navbar';
 
 const Dashboard = () => {
@@ -32,25 +23,40 @@ const Dashboard = () => {
 
     const fetchProjectData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/project?employee_id=${userData.employee_id}`, token);
-            if (data) {
-                setProjectData(data);
+            const response = await fetchData(
+                userData.role !== "admin"
+                ? (`http://127.0.0.1:8000/project?employee_id=${userData.employee_id}`)
+                : ("http://127.0.0.1:8000/project")
+                , token
+            );
+
+            if (response.data) {
+                setProjectData(response.data);
+                setProjectError(null)
             }
+
         } catch (error) {
-            setProjectError(error);
-            console.error("Error fetching project data:", error);
+            setProjectError(error.response.data.detail);
+        } finally {
+            setProjectLoading(false)
         }
     }
 
     const fetchTaskData = async () => {
         try {
-            const data = await fetchData(`http://127.0.0.1:8000/task?employee_id=${userData.employee_id}`, token);
-            if (data) {
-                setTaskData(data);
+            const response = await fetchData(
+                userData.role !== "admin"
+                ? (`http://127.0.0.1:8000/task?employee_id=${userData.employee_id}`)
+                : (`http://127.0.0.1:8000/task`)
+                , token);
+            if (response.data) {
+                setTaskData(response.data);
+                setTaskError(null)
             }
         } catch (error) {
-            setTaskError(error);
-            console.error("Error fetching project data:", error);
+            setTaskError(error.response.data.detail);
+        } finally {
+            setTaskLoading(false)
         }
     }
 
@@ -59,14 +65,6 @@ const Dashboard = () => {
         fetchTaskData();
     }, [])
 
-    useEffect(() => {
-        if (projectData) {
-            setProjectLoading(false);
-        }
-        if (taskData) {
-            setTaskLoading(false);
-        }
-    }, [projectData, taskData])
     
     return(
         isAuthenticated
@@ -76,14 +74,17 @@ const Dashboard = () => {
             <div className="mx-auto max-w-[1000px] px-6 my-8">
                 <div className="flex justify-between space-x-3 align-center">
                     <p className='text-3xl font-bold mb-10'>Dashboard</p>
-                    <AddProject handleSubmit={fetchProjectData} />
+                    {
+                        userData.role==="admin"
+                        && <AddProject handleSubmit={fetchProjectData} />
+                    }
                 </div>
                 {taskLoading ?
                 <p className='text-center'> Hang on while we load your tasks... </p> : 
                 (
                     taskError ? 
-                    <div className='text-center'>
-                        {taskError.response.data.detail}
+                    <div className='text-center my-10'>
+                        {taskError}
                     </div>
                     :
                     <TaskTable data={taskData} handleSubmit={fetchTaskData} />
@@ -92,26 +93,17 @@ const Dashboard = () => {
                 {
                     projectLoading
                     ? <p className='text-center'>Loading the projects you are cooking...</p>
-                    : projectError ? <>{projectError.status + projectError.statustext}</>
-                    : projectData && projectData.length > 0 
-                    ? ( 
-                        <div>
-                            <Carousel>
-                                <CarouselContent>
-                                    {projectData.map((project, index) => (
-                                        <CarouselItem key={index} className="md:basis-1/2">
-                                            <Link to={`/project/${project.project_id}`}>
-                                                <Projects project={project} />
-                                            </Link>
-                                        </CarouselItem>
-                                    ))}
-                                </CarouselContent>
-                                <CarouselPrevious className="-left-4" />
-                                <CarouselNext className="-right-4" />
-                            </Carousel>
+                    : projectError 
+                    ? <div className='text-center my-10'>{projectError}</div>
+                    : ( 
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {projectData.map((project, index) => (
+                                    <Link key={index} to={`/project/${project.project_id}`}>
+                                        <Projects handleSubmit={fetchProjectData} project={project} />
+                                    </Link>
+                            ))}
                         </div>
                     )
-                    : <p>No Projects found...</p>
                 }
             </div>
         </>)
