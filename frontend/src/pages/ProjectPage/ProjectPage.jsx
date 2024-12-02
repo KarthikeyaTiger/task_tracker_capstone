@@ -44,6 +44,23 @@ const ProjectPage = () => {
     const [employeeTaskData, setEmployeeTaskData] = useState(null);
     const [employeeTaskLoading, setEmployeeTaskLoading] = useState(true);
     const [employeeTaskError, setEmployeeTaskError] = useState(null);
+    
+    const [managers, setManagers] = useState(null);
+    const [managersLoading, setManagersLoading] = useState(true);
+    const [managersError, setManagersError] = useState(null);
+
+    const fetchProjectManagers = async () => {
+        try {
+            const response = await fetchData(`http://127.0.0.1:8000/projects?project_id=${projectId}`, token)
+            if (response.data) {
+                setManagers(response.data);
+            }
+        } catch (error) {
+            setManagersError(error.response.data.detail);
+        } finally {
+            setManagersLoading(false);
+        }
+    }
 
     const fetchProjectData = async () => {
         try {
@@ -54,7 +71,7 @@ const ProjectPage = () => {
         } catch (error) {
             setProjectError(error.response.data.detail);
         } finally {
-            setProjectLoading(false)
+            setProjectLoading(false);
         }
     }
 
@@ -88,7 +105,8 @@ const ProjectPage = () => {
     useEffect(() => {
         fetchProjectData();
         fetchAllTaskData();
-        fetchEmployeeTaskData()
+        fetchEmployeeTaskData();
+        fetchProjectManagers();
     }, [])
 
     useEffect(() => {
@@ -155,6 +173,7 @@ const ProjectPage = () => {
                     <Dot />
                     <p className='text-sm'><span className='text-zinc-700'>End Date:</span> <span className='font-medium'>{projectData.enddate}</span></p>
                 </div>
+                
                 <div className='mt-8 flex space-x-3'>
                     <Tabs defaultValue="myTasks" className='grow'>
                         <div className='flex space-x-3'>
@@ -162,11 +181,18 @@ const ProjectPage = () => {
                                 <TabsTrigger value="myTasks" className="rounded-full grow">My Tasks</TabsTrigger>
                                 <TabsTrigger value="allTasks" className="rounded-full grow">All Tasks</TabsTrigger>
                             </TabsList>
-                            
-                            <AddTask
-                                handleSubmit = {fetchAllTaskData}
-                                project_id={projectId}
-                            />
+                            {
+                                managersLoading
+                                ? console.log("loading")
+                                : managersError
+                                ? <>{managersError}</>
+                                : (managers.includes(userData.employee_id) || (userData.role === "admin"))
+                                ? <AddTask
+                                    handleSubmit = {fetchAllTaskData}
+                                    project_id={projectId}
+                                />
+                                : <>{console.log(managers.includes(userData.employee_id) || (userData.role === "admin"))}</>
+                            }
                         </div>
                         <TabsContent value="myTasks" className="max-w-[85vw]">
                             {
