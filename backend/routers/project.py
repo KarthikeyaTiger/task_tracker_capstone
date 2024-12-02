@@ -8,7 +8,7 @@ import uuid
 
 # Other imports
 from typing import Optional
-
+from routers.task import taskAPI
 from dependencies import verify_google_token,db_dependency
 
 
@@ -139,7 +139,7 @@ class projectAPI:
             # Delete associated tasks
             tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).all()
             for task in tasks:
-                await delete_task(task.task_id, db, emp_id=user.get('sub'))  # Assuming `delete_task` is asynchronous
+                await taskAPI.delete_task(self,task.task_id, db, emp_id=user.get('sub'),user=user)  # Assuming `delete_task` is asynchronous
 
             # Delete employee-project associations in bulk
             db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).delete()

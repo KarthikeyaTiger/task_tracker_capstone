@@ -1,12 +1,16 @@
-from sqlalchemy import create_engine, MetaData
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+load_dotenv()
 
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-URL_DATABASE='mysql+pymysql://root:Karthikeya9503@localhost:3306/task_tracker'
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set in the environment variables.")
 
-
-engine = create_engine(URL_DATABASE)
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

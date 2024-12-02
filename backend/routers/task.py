@@ -8,7 +8,7 @@ import uuid
 
 # Other imports
 from typing import Optional
-from routers.project import projectAPI
+from routers.associative import associativeAPI
 from dependencies import verify_google_token,db_dependency
 
 class taskAPI:
@@ -37,7 +37,7 @@ class taskAPI:
 
     async def create_task(self,task_details:schemas.Createtask,db:db_dependency, user: dict = Depends(verify_google_token)):
     # Check if the user is a manager or admin
-        manager_ids = await projectAPI.get_projects(db, task_details.task.project_id)
+        manager_ids = await associativeAPI.get_projects(self,db, task_details.task.project_id)
         if user.get('sub') not in manager_ids and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="You are not authorized to create a task")
 
@@ -110,6 +110,7 @@ class taskAPI:
     async def delete_task(self,task_id:str, db:db_dependency, emp_id=None, user: dict = Depends(verify_google_token)):
         emp_id = emp_id or user.get('sub')
         
+        print(user)
         # Get the project_id associated with the task
         project_id = db.query(models.TaskDetails.project_id).filter(models.TaskDetails.task_id == task_id).scalar()
 
@@ -117,7 +118,7 @@ class taskAPI:
             raise HTTPException(status_code=404, detail='Task not found')
 
         # # Check if the user is a manager or admin for the project
-        manager_ids = await projectAPI.get_projects(db, project_id)
+        manager_ids = await associativeAPI.get_projects(self,db, project_id)
         if emp_id not in manager_ids and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="You are not authorized to perform this operation")
 
@@ -139,7 +140,7 @@ class taskAPI:
             raise HTTPException(status_code=404, detail='Task not found')
 
         # Check if the user is a manager or admin for the project
-        manager_ids = await projectAPI.get_projects(db, project_id)
+        manager_ids = await associativeAPI.get_projects(self,db, project_id)
         if user.get('sub') not in manager_ids and user["role"] != "admin":
             raise HTTPException(status_code=403, detail="You are neither a manager nor admin")
         

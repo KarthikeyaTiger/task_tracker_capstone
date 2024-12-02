@@ -181,7 +181,7 @@ async def delete_project(project_id:str,db:db_dependency,user: dict = Depends(ve
     # Delete associated tasks
     tasks = db.query(models.TaskDetails).filter(models.TaskDetails.project_id == project_id).all()
     for task in tasks:
-        await delete_task(task.task_id, db, emp_id=user.get('sub'))  # Assuming `delete_task` is asynchronous
+        await delete_task(task.task_id, db, emp_id=user.get('sub'),user=user)  # Assuming `delete_task` is asynchronous
 
     # Delete employee-project associations in bulk
     db.query(models.EmployeeProjectsDetails).filter(models.EmployeeProjectsDetails.project_id == project_id).delete()

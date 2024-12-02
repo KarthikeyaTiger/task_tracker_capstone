@@ -61,7 +61,7 @@ const Sidebar = () => {
             <SheetDescription>
               All the projects you are a part of
             </SheetDescription>
-            <div className='py-10 w-[100%]'>
+            <div className='w-[100%]'>
               {
                 projectLoading
                 ? <p className='text-center'>Loading the projects you are cooking...</p>
@@ -69,9 +69,11 @@ const Sidebar = () => {
                 ? <div className='text-center my-10'>{projectError}</div>
                 : (
                   projectData.map((project, index) => (
-                    <Link key={index} to={`/project/${project.project_id}`} className='my-3 p-3 hover:bg-zinc-100 w-[100%]'>
-                      {project.title}
-                    </Link>
+                    <div className='p-3 hover:bg-zinc-100 w-[100%]'>
+                      <Link key={index} to={`/project/${project.project_id}`}>
+                        {project.title}
+                      </Link>
+                    </div>
                   ))
                 )
               }
