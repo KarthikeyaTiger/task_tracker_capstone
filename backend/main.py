@@ -245,14 +245,14 @@ async def create_task(task_details:schemas.Createtask,db:db_dependency, user: di
     return {"message": "Task created successfully", "task_id": task_id}
 
 @app.get('/task/{id}', status_code=status.HTTP_200_OK)
-async def get_task(id: str, db: db_dependency, user: dict = Depends(verify_google_token)):
+async def get_task_by_id(id: str, db: db_dependency, user: dict = Depends(verify_google_token)):
     task = db.query(models.TaskDetails).filter(models.TaskDetails.task_id == id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return task
 
 @app.get('/task', status_code=status.HTTP_200_OK)
-async def get_task(db: db_dependency, project_id: Optional[str] = Query(None), employee_id: Optional[str] = Query(None), user: dict = Depends(verify_google_token)):
+async def get_tasks(db: db_dependency, project_id: Optional[str] = Query(None), employee_id: Optional[str] = Query(None), user: dict = Depends(verify_google_token)):
     query = db.query(models.TaskDetails)
 
     if project_id:
@@ -296,7 +296,7 @@ async def delete_task(task_id:str, db:db_dependency, emp_id=None, user: dict = D
     return {"message": "Task deleted successfully"}
 
 @app.put('/task/{task_id}',status_code=status.HTTP_200_OK)
-async def taskid(task_id:str, task_update:schemas.UpdateTask, db:db_dependency, user: dict = Depends(verify_google_token)):
+async def update_task(task_id:str, task_update:schemas.UpdateTask, db:db_dependency, user: dict = Depends(verify_google_token)):
     # Get the project_id associated with the task
     project_id = db.query(models.TaskDetails.project_id).filter(models.TaskDetails.task_id == task_id).scalar()
 
@@ -343,7 +343,7 @@ async def get_employees(db: db_dependency, user: dict = Depends(verify_google_to
 
 
 @app.get("/employee/{employee_id}",status_code=status.HTTP_200_OK)
-async def get_employee(employee_id: int, db: db_dependency, user: dict = Depends(verify_google_token) ):
+async def get_employee_by_id(employee_id: int, db: db_dependency, user: dict = Depends(verify_google_token) ):
     # Retrieve a specific employee by ID
     employee = db.query(models.EmployeeDetails).filter(models.EmployeeDetails.employee_id == employee_id).first()
     if not employee:
